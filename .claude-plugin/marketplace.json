@@ -1,0 +1,16 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.schema.json",
+  "name": "sigen-mcp",
+  "description": "Sigenergy ESS inverter MCP servers and companion skills",
+  "owner": {
+    "name": "paulczar"
+  },
+  "plugins": [
+    {
+      "name": "sigen-mcp-skills",
+      "source": "./",
+      "description": "Sigenergy ESS skills for Claude Code — monitor, diagnose, configure, and query documentation for Sigenergy ESS inverters via Modbus TCP and SigenCloud API",
+      "skills": ["skills/"]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "sigen-mcp-skills",
+  "description": "Sigenergy ESS skills for Claude Code — monitor, diagnose, configure, and query documentation for Sigenergy ESS inverters via Modbus TCP and SigenCloud API",
+  "version": "0.1.0",
+  "author": {
+    "name": "paulczar"
+  },
+  "repository": "https://github.com/paulczar/sigen-mcp",
+  "license": "MIT"
+}

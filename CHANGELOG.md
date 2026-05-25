@@ -21,9 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Produces a comprehensive savable markdown report with device inventory, seasonal configurations, and step-by-step setup guide
   - Includes refinement log for iterative adjustments over time
 
+### Added
+
+- **Claude Code plugin** — `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` for installing skills via `claude --plugin-dir`, `/plugin marketplace add`, or standalone `.claude/skills/` symlink
+
 ### Changed
 
 - README updated with all three MCP packages
+- README now documents Companion Skills, Claude Code plugin installation (4 methods), and per-agent setup instructions
 - AGENTS.md updated with sigen-docs and sigen-config-optimizer skills
 
 ## [0.1.0] - 2026-05-25

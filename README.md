@@ -40,6 +40,47 @@ Add one or more servers to your MCP client config:
 }
 ```
 
+## Companion Skills
+
+Higher-level workflows that use the MCP tools to provide monitoring, diagnostics, configuration, documentation lookup, and optimization for Sigenergy ESS systems.
+
+| Skill | Triggers | What It Does |
+|-------|----------|-------------|
+| [`sigen-status`](./skills/sigen-status/SKILL.md) | "system status", "dashboard", "overview" | Reads plant + inverter + energy + alarms and synthesizes a formatted dashboard |
+| [`sigen-diagnose`](./skills/sigen-diagnose/SKILL.md) | "something's wrong", "alarm", "troubleshoot" | Step-by-step diagnostic: state → alarms → power flow → battery → trends |
+| [`sigen-config`](./skills/sigen-config/SKILL.md) | "change EMS mode", "set charge limit", "configure" | Safe configuration with pre-read validation and user confirmation |
+| [`sigen-docs`](./skills/sigen-docs/SKILL.md) | "how do I configure", "what does this setting do" | Queries Sigenergy mySigen App docs via MCP or direct GitBook API |
+| [`sigen-config-optimizer`](./skills/sigen-config-optimizer/SKILL.md) | "optimize my settings", "create a custom mode", "design a TOU schedule" | Full configuration design with system snapshot, rate plan, and seasonal profiles |
+
+### Claude Code
+
+This repo ships a [Claude Code plugin](https://code.claude.com/docs/en/plugins) at `.claude-plugin/plugin.json` for loading all skills:
+
+```bash
+# Option 1 — Local session (clone the repo)
+claude --plugin-dir /path/to/sigen-mcp
+
+# Option 2 — Standalone skills (copy individual skills to your project)
+mkdir -p .claude/skills
+cp -r skills/* .claude/skills/
+
+# Option 3 — Standalone global skills (available across all projects)
+mkdir -p ~/.claude/skills
+cp -r skills/* ~/.claude/skills/
+
+# Option 4 — Marketplace install (from GitHub)
+/plugin marketplace add paulczar/sigen-mcp
+/plugin install sigen-mcp-skills@sigen-mcp
+```
+
+After installation, skills are namespaced as `/sigen-mcp-skills:sigen-status`, `/sigen-mcp-skills:sigen-config`, etc. Run `/help` to see them listed.
+
+### Other agents
+
+- **OpenCode** — load via `skill(name="sigen-status")` (built-in support)
+- **Claude Code (Cursor, Windsurf, etc.)** — reference `skills/<name>/SKILL.md` in your project's `.claude/` instructions or agent config
+- **Generic AI agents** — include the SKILL.md content in your system prompt
+
 ## References
 
 - [packages/modbus-mcp/](./packages/modbus-mcp/) — Modbus TCP server with register definitions, tools, and troubleshooting
