@@ -56,7 +56,7 @@ try {
 }
 
 const server = new Server(
-  { name: "sigen-api-mcp", version: "0.1.0" },
+  { name: "sigen-api-mcp", version: "0.1.1" },
   { capabilities: { tools: {} } },
 );
 
