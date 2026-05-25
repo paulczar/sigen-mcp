@@ -58,7 +58,58 @@ Higher-level workflows that use the MCP tools to provide monitoring, diagnostics
 | [`sigen-docs`](./skills/sigen-docs/SKILL.md) | "how do I configure", "what does this setting do" | Queries Sigenergy mySigen App docs via MCP or direct GitBook API |
 | [`sigen-config-optimizer`](./skills/sigen-config-optimizer/SKILL.md) | "optimize my settings", "create a custom mode", "design a TOU schedule" | Full configuration design with system snapshot, rate plan, and seasonal profiles |
 
-### Claude Code
+## Example Output
+
+Examples below generated from a live 13.25 kW / 40.3 kWh Sigenergy ESS in Brisbane, Australia (SigenStor EC 10.0 SP AU).
+
+### System Dashboard (`sigen-status` via SigenCloud API)
+
+```
+## System Status — 26/05/2026, 8:03:03 am
+
+**State**: TOU | On Grid
+**Health**: ✅ No active alarms
+
+### Power Flow
+- **PV**: 1.000 kW
+- **Battery**: -0.600 kW (discharging)
+- **Grid**: Importing 1.400 kW
+- **Load**: 1.600 kW
+- **PV Today**: 0.7 kWh
+
+### System Info
+- **PV Capacity**: 13.25 kW
+- **Battery Capacity**: 40.3 kWh
+- **Has EV DC Charger**: Yes
+```
+
+With Modbus TCP (local network), additional data is available:
+- Lifetime energy counters (PV, grid import/export, battery cycles, EV charging)
+- Inverter temperature, frequency, phase voltages, power factor
+- Battery SOH, PV string-level data, alarm bitfield decoding
+
+### Documentation Query (`sigen-docs` via GitBook AI Answers)
+
+**Question:** I have a Catch Solar Relay for hot water. How can I set up my Sigenergy system so excess solar after the battery is full triggers the relay, while prioritizing self-consumption during peak rates 4–11pm? What EMS mode and settings should I use?
+
+**Answer:**
+
+Use **Time-based Control Mode** for the battery, and configure the Catch Solar Relay as a **Smart load**.
+
+* Set **Operational mode → Time-based Control Mode**.
+* Create a **Self-Consumption** period for **4:00 pm–11:00 pm**.
+  During that period, PV serves the loads first. Excess PV charges the battery. The battery can also discharge to loads.
+* Leave other periods unspecified if you want PV to **prioritize home loads**, then charge the battery, with **no battery discharge** outside your scheduled window.
+* In **Battery Settings**, set **Charge Cut-off SOC** to your full target.
+
+For the relay:
+* Add the Catch Solar Relay under **Smart load**.
+* Set **Control Mode → Auto (Time-based) → Surplus PV Only**.
+* Set **Starting Power** and **Rated Power** in **Smart Load Settings → Operation Settings**.
+
+If you also want to limit grid import during peak hours, add **Peak Shaving** in **Grid Settings**.
+
+## Claude Code
 
 This repo ships a [Claude Code plugin](https://code.claude.com/docs/en/plugins) at `.claude-plugin/plugin.json` for loading all skills:
 

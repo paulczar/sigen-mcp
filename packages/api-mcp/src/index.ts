@@ -84,11 +84,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "cloud_history",
-      description: "Get historical energy data at 5-minute, hourly, or daily intervals (requires SIGEN_APP_KEY and SIGEN_APP_SECRET in .env, or --app-key / --app-secret CLI args)",
+      description: "Get historical daily energy data (requires SIGEN_APP_KEY and SIGEN_APP_SECRET in .env, or --app-key / --app-secret CLI args). Uses the Northbound API — only 'day' level is supported with AppKey auth.",
       inputSchema: {
         type: "object",
         properties: {
-          date: { type: "string", description: "Date in YYYYMMDD format" },
+          date: { type: "string", description: "Date in YYYYMMDD or YYYY-MM-DD format" },
           level: { type: "string", enum: ["day", "hour", "5min"], default: "day" },
         },
         required: ["date"],
@@ -190,7 +190,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "cloud_history": {
         const date = args?.date as string;
-        if (!date) throw new McpError(ErrorCode.InvalidParams, "date is required (YYYYMMDD)");
+        if (!date) throw new McpError(ErrorCode.InvalidParams, "date is required (YYYYMMDD or YYYY-MM-DD)");
         const level = (args?.level as string) ?? "day";
         const data = await cloudClient!.getHistory(date, level);
         const entries = (data as any).itemList || [];

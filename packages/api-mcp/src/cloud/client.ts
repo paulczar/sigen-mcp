@@ -37,6 +37,7 @@ export class SigenCloudClient {
   private password: string;
   private token: TokenInfo | null = null;
   private _stationId: string | null = null;
+  private _stationCode: string | null = null;
 
   // Northbound API (AppKey/AppSecret) auth
   private appKey: string;
@@ -55,6 +56,10 @@ export class SigenCloudClient {
 
   get stationId(): string | null {
     return this._stationId;
+  }
+
+  get stationCode(): string | null {
+    return this._stationCode;
   }
 
   private get isAuthenticated(): boolean {
@@ -257,6 +262,7 @@ export class SigenCloudClient {
   async getStationInfo(): Promise<StationInfo> {
     const data = await this.request<Record<string, unknown>>("GET", "/device/owner/station/home");
     this._stationId = String(data.stationId);
+    this._stationCode = String(data.stationCode ?? data.stationId);
     return {
       stationId: String(data.stationId),
       hasPv: Boolean(data.hasPv),
@@ -288,10 +294,17 @@ export class SigenCloudClient {
   }
 
   async getHistory(date: string, level = "day"): Promise<HistoryResponse> {
-    const sid = await this.ensureStationId();
-    return this.northboundRequest<HistoryResponse>("GET", `/openapi/systems/${sid}/history`, {
-      params: { date, level },
+    // Northbound API uses stationCode (e.g. "TAETN1768371966"), not numeric stationId
+    const code = this._stationCode ?? await this.ensureStationId();
+    // Convert YYYYMMDD -> YYYY-MM-DD if needed (NB API requires dash format)
+    const fmt = date.length === 8 && !date.includes("-")
+      ? `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`
+      : date;
+    const raw = await this.northboundRequest<string>("GET", `/openapi/systems/${code}/history`, {
+      params: { date: fmt, level },
     });
+    // NB API wraps data as a JSON string — parse if needed
+    return typeof raw === "string" ? JSON.parse(raw) as HistoryResponse : raw;
   }
 
   async getSmartLoads(): Promise<SmartLoad[]> {

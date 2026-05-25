@@ -57,6 +57,8 @@ Requires: AES-128-CBC password encryption + OAuth2 password grant flow.
 | System onboarding/offboarding | ✅ After approval |
 | Alternate mode switching path | ✅ After approval |
 
+> **Note:** The Northbound API (AppKey/AppSecret) is not as thoroughly tested in this project as the End-User API (user/pass). Auth, mode query, and mode switching work in testing, but the history endpoint (`/openapi/systems/{id}/history`) has shown inconsistent "Access restriction" errors. If you're building on this project, rely on the End-User API path for most tools.
+
 ### Region Base URLs
 
 | Region | End-User API Base | OpenAPI Base | MQTT Broker |

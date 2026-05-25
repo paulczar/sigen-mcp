@@ -18,7 +18,7 @@ npx -y @paulczar/sigen-api-mcp --cloud-user email@example.com --cloud-pass your-
 # Optional region (defaults to aus)
 npx -y @paulczar/sigen-api-mcp --cloud-user email@example.com --cloud-pass your-password --cloud-region eur
 
-# With AppKey/AppSecret (enables cloud_history tool)
+# With AppKey/AppSecret (enables cloud_history tool — experimental, user/pass auth is better tested)
 npx -y @paulczar/sigen-api-mcp --cloud-user email@example.com --cloud-pass your-password --app-key YOUR_APP_KEY --app-secret YOUR_APP_SECRET
 ```
 
@@ -42,6 +42,8 @@ npx -y @paulczar/sigen-api-mcp
 
 CLI args take precedence over env vars. The AppKey/AppSecret are optional — if omitted, `cloud_history` will try password-based Northbound auth as a fallback.
 
+> **Note:** The AppKey/AppSecret auth path is not as thoroughly tested as the regular user/password auth. Most tools work with user/pass only — stick with that unless you specifically need `cloud_history`.
+
 ### MCP client config
 
 ```json
@@ -63,7 +65,7 @@ CLI args take precedence over env vars. The AppKey/AppSecret are optional — if
 | `cloud_energy_flow` | Real-time energy flow: PV production, load, battery charge/discharge, grid import/export |
 | `cloud_operational_modes` | List available EMS modes and their descriptions |
 | `cloud_current_mode` | Current active EMS mode with parameters |
-| `cloud_history` | Historical energy data (requires Northbound API AppKey/AppSecret) |
+| `cloud_history` | Historical daily energy data (requires Northbound API AppKey/AppSecret — experimental) |
 | `cloud_smart_loads` | Smart load / diversion device status |
 | `cloud_alarms` | Alarm list with severity, type, and timestamp |
 
@@ -79,6 +81,8 @@ Two separate auth systems are used depending on the endpoint:
 For the SigenCloud API, your password is encrypted client-side using the app secret before being sent over HTTPS. Credentials are never stored — they're held in memory for the session lifetime.
 
 For the Northbound API, provide an AppKey and AppSecret (from your developer app registration). If omitted but `cloud_history` is called, it falls back to password-based Northbound auth using your SigenCloud credentials. See [docs/sigencloud-api.md](../../docs/sigencloud-api.md) for developer app setup instructions.
+
+> **Experimental:** The AppKey/AppSecret path works for auth and basic endpoints (mode switching, query settings), but `cloud_history` in particular has shown inconsistent results during testing — some calls return data, others return "Access restriction" errors. User/pass auth for the core tools is the well-tested path.
 
 ## License
 
