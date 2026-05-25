@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Claude Code plugin** — `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` for installing skills via `claude --plugin-dir`, `/plugin marketplace add`, or standalone `.claude/skills/` symlink
+- **npm publish GitHub Action** — auto-publishes all 3 packages to npm on push to `main`
 
 ### Changed
 
