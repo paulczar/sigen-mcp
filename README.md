@@ -4,17 +4,23 @@ Monorepo for [Sigenergy ESS](https://www.sigenergy.com) MCP (Model Context Proto
 
 ## Packages
 
-| Package | Description | CLI |
-|---------|-------------|-----|
-| [`packages/modbus-mcp`](./packages/modbus-mcp/) | Modbus TCP — read registers, EMS mode, alarms, power flow | `sigen-modbus-mcp --host <ip>` |
-| [`packages/api-mcp`](./packages/api-mcp/) | SigenCloud API — station info, energy flow, history, alarms | `sigen-api-mcp --cloud-user <email> --cloud-pass <pass>` |
-| [`packages/sigen-docs-mcp`](./packages/sigen-docs-mcp/) | Sigenergy doc query — operational modes, battery/grid/solar settings | `sigen-docs-mcp` |
+All packages are published to npm — no clone or build needed for end users.
 
-## Setup
+| Package | Description | npx |
+|---------|-------------|-----|
+| [`@paulczar/sigen-modbus-mcp`](./packages/modbus-mcp/) | Modbus TCP — read registers, EMS mode, alarms, power flow | `npx -y @paulczar/sigen-modbus-mcp --host <ip>` |
+| [`@paulczar/sigen-api-mcp`](./packages/api-mcp/) | SigenCloud API — station info, energy flow, history, alarms | `npx -y @paulczar/sigen-api-mcp --cloud-user <email> --cloud-pass <pass>` |
+| [`@paulczar/sigen-docs-mcp`](./packages/sigen-docs-mcp/) | Sigenergy doc query — operational modes, battery/grid/solar settings | `npx -y @paulczar/sigen-docs-mcp` |
+
+## Quick start
 
 ```bash
-npm install
-npm run build
+# Just add the config below to your MCP client — no install needed
+
+# Or if you want to clone and develop locally:
+# git clone https://github.com/paulczar/sigen-mcp
+# npm install
+# npm run build
 ```
 
 ## MCP Configuration
