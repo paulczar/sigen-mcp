@@ -1,8 +1,8 @@
 name: Publish to npm
 
 on:
-  push:
-    branches: [main]
+  release:
+    types: [published]
 
 permissions:
   id-token: write  # Required for OIDC-based Trusted Publishing with npm

@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Claude Code plugin** — `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` for installing skills via `claude --plugin-dir`, `/plugin marketplace add`, or standalone `.claude/skills/` symlink
-- **npm publish GitHub Action** — auto-publishes all 3 packages to npm on push to `main` via OIDC Trusted Publishing
+- **npm publish GitHub Action** — publishes all 3 packages to npm when a GitHub Release is published, via OIDC Trusted Publishing (no stored secrets)
 - **Package READMEs** — each package now has its own `README.md` with CLI usage, MCP config, and tool listings
 - **AppKey/AppSecret support** — api-mcp now reads `SIGEN_APP_KEY`/`SIGEN_APP_SECRET` from env or `--app-key`/`--app-secret` CLI args. `cloud_history` uses Northbound API auth (key-based with password fallback). Previously AppKey/AppSecret were ignored
 
