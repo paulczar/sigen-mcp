@@ -27,7 +27,7 @@ import {
   AC_CHARGER_ALARM_CODES1,
   AC_CHARGER_ALARM_CODES2,
   AC_CHARGER_ALARM_CODES3,
-} from "../src/constants/registry.js";
+} from "../packages/modbus-mcp/src/constants/registry.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -124,7 +124,7 @@ function generate(): string {
   const lines: string[] = [];
   lines.push("# Register Reference — sigen-mcp");
   lines.push("");
-  lines.push("Auto-generated from `src/constants/registry.ts`. Regenerate with `npm run docs`.");
+  lines.push("Auto-generated from `packages/modbus-mcp/src/constants/registry.ts`. Regenerate with `npm run docs`.");
   lines.push("");
   lines.push(`Total registers defined: **${Object.keys(REGISTERS).length}**`);
   lines.push("");
@@ -210,7 +210,7 @@ function generate(): string {
 
   lines.push("---");
   lines.push("");
-  lines.push(`Generated from registry.ts — ${Object.keys(REGISTERS).length} register definitions, ${enums.length + alarms.length} enum maps.`);
+  lines.push(`Generated from packages/modbus-mcp/src/constants/registry.ts — ${Object.keys(REGISTERS).length} register definitions, ${enums.length + alarms.length} enum maps.`);
 
   return lines.join("\n");
 }

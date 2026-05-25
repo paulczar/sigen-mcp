@@ -6,7 +6,7 @@
 // Usage: node test-validate-registers.mjs [host] [port]
 
 import { spawn } from "node:child_process";
-import { REGISTERS } from "./dist/constants/registry.js";
+import { REGISTERS } from "./packages/modbus-mcp/dist/constants/registry.js";
 
 const host = process.argv[2] || "192.168.86.207";
 const port = process.argv[3] || "502";
@@ -41,7 +41,7 @@ async function main() {
   console.log(`\nValidating ${total} registers against ${host}:${port}...\n`);
 
   // Spawn the MCP server once and reuse
-  const proc = spawn("node", ["./dist/index.js", "--host", host, "--port", port], {
+  const proc = spawn("node", ["./packages/modbus-mcp/dist/index.js", "--host", host, "--port", port], {
     stdio: ["pipe", "pipe", "pipe"],
   });
 

@@ -25,7 +25,7 @@ class ServerSession {
 
   start() {
     return new Promise((resolve) => {
-      this.proc = spawn("node", ["./dist/index.js", "--host", HOST, "--port", PORT], {
+      this.proc = spawn("node", ["./packages/modbus-mcp/dist/index.js", "--host", HOST, "--port", PORT], {
         stdio: ["pipe", "pipe", "pipe"],
       });
 
@@ -89,7 +89,7 @@ function getText(result) {
 
 // --- Tests ---
 
-describe("sigen-mcp - read tools", { timeout: 90000 }, () => {
+describe("sigen-modbus-mcp - read tools", { timeout: 90000 }, () => {
   let srv;
 
   before(async () => {
@@ -227,7 +227,7 @@ describe("sigen-mcp - read tools", { timeout: 90000 }, () => {
   });
 });
 
-describe("sigen-mcp - edge cases and write tools", { timeout: 60000 }, () => {
+describe("sigen-modbus-mcp - edge cases and write tools", { timeout: 60000 }, () => {
   let srv;
 
   before(async () => {

@@ -1,38 +1,23 @@
 {
-  "name": "@paulczar/sigen-mcp",
+  "name": "sigen-mcp",
   "version": "0.1.0",
-  "description": "MCP server for Sigenergy ESS inverters via Modbus TCP",
-  "type": "module",
-  "bin": {
-    "sigen-mcp": "dist/index.js"
-  },
-  "exports": {
-    ".": "./dist/index.js"
-  },
-  "files": [
-    "dist"
+  "private": true,
+  "description": "Sigenergy ESS MCP servers — Modbus TCP + SigenCloud API",
+  "workspaces": [
+    "packages/modbus-mcp",
+    "packages/api-mcp",
+    "packages/sigen-docs-mcp"
   ],
   "scripts": {
-    "build": "tsc",
-    "docs": "tsx scripts/generate-register-docs.ts",
-    "predocs": "npm run build",
-    "prepublishOnly": "npm run build"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.8.0",
-    "modbus-serial": "^8.0.18"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsx": "^4.22.3",
-    "typescript": "^5.7.0"
+    "build": "npm run build --workspaces",
+    "docs": "npm run docs -w packages/modbus-mcp",
+    "clean": "npm run clean --workspaces 2>/dev/null; rm -rf node_modules packages/*/node_modules"
   },
   "keywords": [
     "mcp",
     "sigenergy",
     "modbus",
-    "inverter",
-    "ess",
+    "sigencloud",
     "sigen"
   ],
   "license": "MIT"
