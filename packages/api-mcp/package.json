@@ -1,0 +1,35 @@
+{
+  "name": "@paulczar/sigen-api-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for SigenCloud API — read station data, energy flow, history, and alarms",
+  "type": "module",
+  "bin": {
+    "sigen-api-mcp": "dist/index.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "mcp",
+    "sigenergy",
+    "sigencloud",
+    "api",
+    "sigen"
+  ],
+  "license": "MIT"
+}
