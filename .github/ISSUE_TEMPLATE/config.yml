@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sigenergy Modbus Protocol Reference
+    url: https://pdf.tritec.info/pdf/produkte/Sigenergy_Modbus_Protocol_20240409_EN.pdf
+    about: Official Modbus register documentation
+  - name: Sigenergy-Local-Modbus (HACS)
+    url: https://github.com/TypQxQ/Sigenergy-Local-Modbus
+    about: Community register definitions and references
