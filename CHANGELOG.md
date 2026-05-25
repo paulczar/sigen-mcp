@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **cloud_history** — fixed "param illegal" error: Northbound API requires `stationCode` (e.g. `TAETN1768371966`) not numeric `stationId`, and `YYYY-MM-DD` date format instead of `YYYYMMDD`
+- **cloud_history** — handle Northbound API JSON-string-wrapped response data (auto-parse before returning)
+
 ### Added
+
+- **README example output** — live dashboard from SigenCloud API and docs Q&A about Catch Solar Relay + peak rate configuration
+- **Experimental notices** — AppKey/AppSecret auth marked as less tested than user/pass in api-mcp and developer docs
 
 - **sigen-docs-mcp** — new `@paulczar/sigen-docs-mcp` package with `query_sigen_docs` tool
   - Wraps Sigenergy's GitBook AI Answers API for natural-language doc queries
