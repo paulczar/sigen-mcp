@@ -1,0 +1,155 @@
+# AGENTS.md — sigen-mcp
+
+MCP server for Sigenergy ESS inverters via Modbus TCP. Single-file tools at `src/index.ts`, register defs in `src/constants/registry.ts`.
+
+## Structure
+
+```
+src/
+├── index.ts              # Entry point: server setup, tools, request handlers
+└── constants/
+    └── registry.ts       # Register addresses, enum maps (EMS modes, grid statuses, etc.)
+```
+
+## Core Patterns
+
+### Adding a new tool
+1. Add register address + metadata to `registry.ts` (with gain, slave ID, type comment, dataType, count)
+2. Add tool schema to `ListToolsRequestSchema` handler (line ~158)
+3. Add `case "tool_name":` to `CallToolRequestSchema` handler (line ~245)
+4. Use `readRegister()` for 16-bit, `readRegister32()` for 32-bit (S32/U32), `readRegister64()` for 64-bit (U64)
+5. Use `decodeAlarms()` for alarm bitfield registers
+6. Use `Promise.all()` for parallel register reads (see `read_plant`, `read_plant_energy`)
+7. Wrap unknown-register reads with `.catch(() => 0)` for optional peripherals (EVAC, etc.)
+8. Return `{ content: [{ type: "text", text: "..." }] }`
+
+### Register addressing
+| Range | Type | Helper |
+|-------|------|--------|
+| 30001–39999 | input | `regType()` → `"input"` |
+| 40001–49999 | holding | `regType()` → `"holding"` |
+| 32-bit | two consecutive | `readRegister32()` |
+| 64-bit | four consecutive | `readRegister64()` |
+
+### Slave IDs
+- **247** — Plant-level registers (EMS mode, battery, grid, alarms, energy counters)
+- **1** — Inverter-level (PV strings, DC charger, AC charger, inverter state)
+- **0** — Plant broadcast address (write-only, no reply)
+
+### Data Types & Gains
+Raw register × gain = real value. Gains in `registry.ts` `RegisterDef.gain`:
+
+| Data Type | Gain | Applies To |
+|-----------|------|------------|
+| `U16`/`S16` | — | status enums, counts |
+| `U16`/`S16` | ×10 | voltage (V), SOC/SOH (%), temperature (°C) |
+| `U16`/`S16` | ×100 | frequency (Hz), percentage (%), current (A) |
+| `U16`/`S16` | ×1000 | insulation (MΩ), power factor |
+| `U32`/`S32` | ×1000 | power (kW), apparent power (kVA/kvar) |
+| `U32`/`S32` | ×100 | energy (kWh), capacity (kWh), voltage (V) |
+| `U64` | ×100 | accumulated energy (kWh) |
+
+### Register Sections
+| Key Prefix | Address Range | Slave | Content |
+|-----------|---------------|-------|---------|
+| `PLANT_*` | 30000–30284 | 247 | EMS, grid, power flow, battery, alarms, energy, smart loads |
+| `PLANT_*` | 40000–40068 | 247 | Setpoints, limits, grid code config |
+| `INVERTER_*` | 30500–31105 | 1 | Nameplate, state, phase power, PV strings 1–36, battery, grid |
+| `DC_CHARGER_*` | 31500–31513 | 1 | EV DC charging metrics |
+| `INVERTER_*` | 40500–41000 | 1 | Inverter start/stop, DC charger control |
+| `AC_CHARGER_*` | 32000–32014 | 1 | EV AC charger state, power, energy, alarms |
+| `AC_CHARGER_*` | 42000–42001 | 1 | AC charger control |
+
+### Alarm Decoding
+Alarm registers are bitfields. Use `decodeAlarms(registerValue, ALARM_CODE_MAP)` which returns an array of active alarm description strings. See `read_alarms` tool for usage.
+
+### Enum Maps (import from `registry.ts`)
+| Map | Values | Used By |
+|-----|--------|---------|
+| `EMS_MODES` | 0=MaxSelfConsumption, 1=AI, 2=TOU, 5=FullFeedIn, ... | `read_ems_mode`, `read_plant` |
+| `GRID_STATUSES` | 0=OnGrid, 1=OffGrid(Auto), 2=OffGrid(Manual) | `read_grid_status`, `read_plant` |
+| `RUNNING_STATES` | 0=Standby, 1=Running, 2=Fault, 3=Shutdown, 7=EnvAbnormality | `read_plant`, `read_inverter_detail` |
+| `REMOTE_EMS_MODES` | Appendix 6 — remote control modes | write tools |
+| `AC_CHARGER_STATES` | 0=Init through 7=Error (IEC61851-1) | `read_ac_charger` |
+| `DC_CHARGER_STATUSES` | 0-6 (legacy) | `read_ev_status` |
+| `DC_CHARGER_RUNNING_STATE_V28` | 0x00-0x0A (V2.8 new) | V2.8 DC charger tools |
+| `OUTPUT_TYPES` | 0=L/N, 1=L1/L2/L3, 2=L1/L2/L3/N, 3=L1/L2/N | `read_inverter_detail` |
+| `PCS_ALARM_CODES` | Appendix 2 — bitfield | `read_alarms` |
+| `PCS_ALARM_CODES2` | Appendix 3 — bitfield | `read_alarms` |
+| `ESS_ALARM_CODES` | Appendix 4 — bitfield | `read_alarms` |
+| `GATEWAY_ALARM_CODES` | Appendix 5 — bitfield | `read_alarms` |
+| `DC_CHARGER_ALARM_CODES` | Appendix 11 — bitfield | `read_alarms` |
+| `PLANT_ALARM_CODES6` | Appendix 12 — bitfield | `read_alarms` |
+| `PLANT_ALARM_CODES7` | Appendix 13 — bitfield | `read_alarms` |
+| `AC_CHARGER_ALARM_CODES1/2/3` | Appendix 8/9/10 — bitfield | `read_ac_charger` |
+
+## Conventions
+- No `any` types — use proper casts
+- ESM (`import`/`export`) throughout
+- Functions > classes (no OOP wrappers)
+- `console.error` for server logs (stdio is MCP transport)
+- `Promise.all()` for parallel register reads (see `read_ev_status`)
+
+## Anti-patterns
+- Don't suppress Modbus errors — let `McpError` surface them
+- Don't expose the raw `modbus-serial` client outside `index.ts`
+- Don't add new dependencies without strong justification
+- Don't use `.js` extensions in imports (TypeScript strict ESM convention — keep them)
+
+## References
+
+Reference PDFs are gitignored. Hydrate the folder after cloning:
+
+```bash
+# V2.8 — Latest (from HACS GitHub mirror)
+curl -sLo references/Sigenergy_Modbus_Protocol_V2.8_20251128.pdf \
+  "https://raw.githubusercontent.com/TypQxQ/Sigenergy-Local-Modbus/v.1.2.0/Modbus_reference_documentation/Modbus%20Protocol%20EN%20-%20SIGEN%20(1)/Modbus_Protocol_EN_2.8-SIGEN.pdf"
+
+# V2.7 — Public on sigenergy.com (region-locked, may need browser User-Agent)
+curl -sLO "https://www.sigenergy.com/uploads/us_download/1755488219226583.pdf"
+mv 1755488219226583.pdf references/Sigenergy_Modbus_Protocol_V2.7_20250523.pdf
+```
+
+Check `references/README.md` for the full version table and download URLs. Update this section when new protocol versions are published.
+
+## Commands
+```bash
+npm run build   # tsc → dist/
+npm run docs    # generate docs/registers.md from registry.ts
+npm install     # install deps
+npx sigen-mcp --host 192.168.x.x   # run
+```
+
+## Skills
+
+Companion skills provide higher-level workflows on top of the MCP tools. Available in two formats:
+
+### SKILL.md (cross-platform standard — AAIF/Linux Foundation)
+
+Standard format compatible with Claude Code, Cursor, Codex, Copilot, VS Code, Windsurf, Roo Code, and 20+ other agents. Each skill is a directory with a `SKILL.md` containing YAML frontmatter:
+
+```
+skills/
+├── sigen-status/     → "system status", "dashboard", "overview"
+├── sigen-diagnose/   → "something's wrong", "alarm", "troubleshoot", "battery not charging"
+└── sigen-config/     → "change EMS mode", "set charge limit", "configure"
+```
+
+### .opencode/skills (legacy — OpenCode native)
+
+Legacy format for OpenCode backward compatibility in `.opencode/skills/sigen-*.md`.
+
+### Skill Reference
+
+| Name | Triggers | What It Does |
+|---|---|---|
+| `sigen-status` | "system status", "dashboard", "overview" | Calls `read_plant` + `read_inverter_detail` + `read_plant_energy` + `read_alarms` and synthesizes a formatted dashboard with interpretation |
+| `sigen-diagnose` | "something's wrong", "alarm", "troubleshoot", "battery not charging" | Step-by-step diagnostic: running state → alarms → power flow → battery → EMS mode → energy trends. Includes common issue patterns with likely causes |
+| `sigen-config` | "change EMS mode", "set charge limit", "configure" | Safe configuration workflow: always reads current state first, validates ranges, requires user confirmation before writes |
+
+Load a skill with `skill(name="sigen-status")` and follow its instructions. For OpenCode, use `skill(name="sigen-status")`. For other agents, reference the `skills/<name>/SKILL.md` path.
+
+## Key references
+- [references/](./references/) — Local reference documentation with version history and downloaded PDFs
+- [Sigenergy Modbus Protocol PDF (V2.8)](https://raw.githubusercontent.com/TypQxQ/Sigenergy-Local-Modbus/v.1.2.0/Modbus_reference_documentation/Modbus%20Protocol%20EN%20-%20SIGEN%20(1)/Modbus_Protocol_EN_2.8-SIGEN.pdf) — Latest official Modbus register documentation
+- [Sigenergy-Local-Modbus (HACS)](https://github.com/TypQxQ/Sigenergy-Local-Modbus) — Community register definitions
