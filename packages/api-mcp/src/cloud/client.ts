@@ -38,12 +38,19 @@ export class SigenCloudClient {
   private token: TokenInfo | null = null;
   private _stationId: string | null = null;
 
-  constructor(opts: { region: string; username: string; password: string }) {
+  // Northbound API (AppKey/AppSecret) auth
+  private appKey: string;
+  private appSecret: string;
+  private northboundToken: TokenInfo | null = null;
+
+  constructor(opts: { region: string; username: string; password: string; appKey?: string; appSecret?: string }) {
     const url = REGION_URLS[opts.region];
     if (!url) throw new Error(`Unknown region "${opts.region}". Valid: ${Object.keys(REGION_URLS).join(", ")}`);
     this.baseUrl = url;
     this.username = opts.username;
     this.password = opts.password;
+    this.appKey = opts.appKey ?? "";
+    this.appSecret = opts.appSecret ?? "";
   }
 
   get stationId(): string | null {
@@ -152,6 +159,94 @@ export class SigenCloudClient {
     return json.data as T;
   }
 
+  private async northboundLoginWithKey(): Promise<void> {
+    const key = Buffer.from(`${this.appKey}:${this.appSecret}`).toString("base64");
+    const resp = await fetch(`${this.baseUrl}/openapi/auth/login/key`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key }),
+    });
+    if (!resp.ok) {
+      const body = await resp.text().catch(() => "");
+      throw new Error(`Northbound key auth failed (${resp.status}): ${body}`);
+    }
+    const json: { code?: number; msg?: string; data?: string } = await resp.json();
+    if (json.code !== undefined && json.code !== 0) {
+      throw new Error(`Northbound key auth error ${json.code}: ${json.msg || "unknown"}`);
+    }
+    const data = json.data ? JSON.parse(json.data) : null;
+    if (!data?.accessToken) throw new Error("Northbound key auth failed: no accessToken in response");
+    this.northboundToken = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken ?? "",
+      expiresAt: Date.now() / 1000 + (data.expiresIn ?? 43199),
+    };
+    console.error("Northbound API authenticated via AppKey");
+  }
+
+  private async northboundLoginWithPassword(): Promise<void> {
+    const encrypted = encryptPassword(this.password);
+    const resp = await fetch(`${this.baseUrl}/openapi/auth/login/password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: this.username, password: encrypted }),
+    });
+    if (!resp.ok) {
+      const body = await resp.text().catch(() => "");
+      throw new Error(`Northbound password auth failed (${resp.status}): ${body}`);
+    }
+    const json: { code?: number; msg?: string; data?: string } = await resp.json();
+    if (json.code !== undefined && json.code !== 0) {
+      throw new Error(`Northbound password auth error ${json.code}: ${json.msg || "unknown"}`);
+    }
+    const data = json.data ? JSON.parse(json.data) : null;
+    if (!data?.accessToken) throw new Error("Northbound password auth failed: no accessToken in response");
+    this.northboundToken = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken ?? "",
+      expiresAt: Date.now() / 1000 + (data.expiresIn ?? 43199),
+    };
+    console.error("Northbound API authenticated via password");
+  }
+
+  private async ensureNorthboundAuth(): Promise<void> {
+    if (this.northboundToken !== null && Date.now() / 1000 < this.northboundToken.expiresAt - 600) return;
+    if (this.appKey && this.appSecret) {
+      await this.northboundLoginWithKey();
+    } else {
+      await this.northboundLoginWithPassword();
+    }
+  }
+
+  private async northboundRequest<T>(method: string, path: string, opts?: {
+    params?: Record<string, string>;
+  }): Promise<T> {
+    await this.ensureNorthboundAuth();
+    const url = new URL(`${this.baseUrl}${path}`);
+    if (opts?.params) {
+      for (const [k, v] of Object.entries(opts.params)) {
+        url.searchParams.set(k, v);
+      }
+    }
+    const resp = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${this.northboundToken!.accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!resp.ok) {
+      const body = await resp.text().catch(() => "");
+      if (resp.status === 429) throw new Error("SigenCloud rate limited (429)");
+      throw new Error(`SigenCloud Northbound API error (${resp.status}): ${body}`);
+    }
+    const json: { code?: number; msg?: string; data?: T } = await resp.json();
+    if (json.code !== undefined && json.code !== 0) {
+      throw new Error(`SigenCloud Northbound API error ${json.code}: ${json.msg || "unknown"}`);
+    }
+    return json.data as T;
+  }
+
   private async ensureStationId(): Promise<string> {
     if (this._stationId) return this._stationId;
     const info = await this.getStationInfo();
@@ -194,7 +289,7 @@ export class SigenCloudClient {
 
   async getHistory(date: string, level = "day"): Promise<HistoryResponse> {
     const sid = await this.ensureStationId();
-    return this.request<HistoryResponse>("GET", `/openapi/systems/${sid}/history`, {
+    return this.northboundRequest<HistoryResponse>("GET", `/openapi/systems/${sid}/history`, {
       params: { date, level },
     });
   }

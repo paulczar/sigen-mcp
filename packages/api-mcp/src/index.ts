@@ -16,29 +16,36 @@ function parseArgs() {
   let cloudUser = "";
   let cloudPass = "";
   let cloudRegion = "aus";
+  let appKey = "";
+  let appSecret = "";
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--cloud-user" && i + 1 < args.length) cloudUser = args[++i];
     else if (args[i] === "--cloud-pass" && i + 1 < args.length) cloudPass = args[++i];
     else if (args[i] === "--cloud-region" && i + 1 < args.length) cloudRegion = args[++i];
+    else if (args[i] === "--app-key" && i + 1 < args.length) appKey = args[++i];
+    else if (args[i] === "--app-secret" && i + 1 < args.length) appSecret = args[++i];
   }
-  // Fall back to env vars (SIGEN_USERNAME/SIGEN_PASSWORD/SIGEN_REGION)
+  // Fall back to env vars
   if (!cloudUser) cloudUser = process.env.SIGEN_USERNAME ?? "";
   if (!cloudPass) cloudPass = process.env.SIGEN_PASSWORD ?? "";
   if (!cloudRegion || cloudRegion === "aus") cloudRegion = process.env.SIGEN_REGION ?? "aus";
+  if (!appKey) appKey = process.env.SIGEN_APP_KEY ?? "";
+  if (!appSecret) appSecret = process.env.SIGEN_APP_SECRET ?? "";
   if (!cloudUser || !cloudPass) {
-    console.error("Usage: sigen-api-mcp --cloud-user <email> --cloud-pass <password> [--cloud-region <region>]");
-    console.error("       Or set SIGEN_USERNAME, SIGEN_PASSWORD, SIGEN_REGION in .env");
+    console.error("Usage: sigen-api-mcp --cloud-user <email> --cloud-pass <password> [--cloud-region <region>] [--app-key <key> --app-secret <secret>]");
+    console.error("       Or set SIGEN_USERNAME, SIGEN_PASSWORD, SIGEN_REGION, SIGEN_APP_KEY, SIGEN_APP_SECRET in .env");
     process.exit(1);
   }
-  return { cloudUser, cloudPass, cloudRegion };
+  return { cloudUser, cloudPass, cloudRegion, appKey, appSecret };
 }
 
-const { cloudUser, cloudPass, cloudRegion } = parseArgs();
+const { cloudUser, cloudPass, cloudRegion, appKey, appSecret } = parseArgs();
 
 let cloudClient: SigenCloudClient | null = null;
 try {
-  cloudClient = new SigenCloudClient({ region: cloudRegion, username: cloudUser, password: cloudPass });
+  cloudClient = new SigenCloudClient({ region: cloudRegion, username: cloudUser, password: cloudPass, appKey, appSecret });
   console.error(`SigenCloud client initialized (region: ${cloudRegion})`);
+  if (appKey) console.error("Northbound API key provided — history tool available");
 } catch (err) {
   cloudClient = null;
   const msg = err && typeof err === "object" && "message" in err
@@ -77,7 +84,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "cloud_history",
-      description: "Get historical energy data at 5-minute, hourly, or daily intervals",
+      description: "Get historical energy data at 5-minute, hourly, or daily intervals (requires SIGEN_APP_KEY and SIGEN_APP_SECRET in .env, or --app-key / --app-secret CLI args)",
       inputSchema: {
         type: "object",
         properties: {
