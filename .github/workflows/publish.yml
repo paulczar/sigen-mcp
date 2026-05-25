@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  id-token: write  # Required for OIDC-based Trusted Publishing with npm
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -19,16 +22,10 @@ jobs:
       - run: npm run build --workspaces
 
       - name: Publish @paulczar/sigen-modbus-mcp
-        run: npm publish -w packages/modbus-mcp --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish -w packages/modbus-mcp --access public --provenance
 
       - name: Publish @paulczar/sigen-api-mcp
-        run: npm publish -w packages/api-mcp --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish -w packages/api-mcp --access public --provenance
 
       - name: Publish @paulczar/sigen-docs-mcp
-        run: npm publish -w packages/sigen-docs-mcp --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish -w packages/sigen-docs-mcp --access public --provenance
