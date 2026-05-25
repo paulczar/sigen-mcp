@@ -1,14 +1,40 @@
 # AGENTS.md — sigen-mcp
 
-MCP server for Sigenergy ESS inverters via Modbus TCP. Single-file tools at `src/index.ts`, register defs in `src/constants/registry.ts`.
+Monorepo for Sigenergy ESS MCP servers:
+
+- **`packages/modbus-mcp/`** — Modbus TCP server (register reads, EMS control, alarms)
+- **`packages/api-mcp/`** — SigenCloud API server (cloud station info, energy flow, history)
+- **`packages/sigen-docs-mcp/`** — GitBook doc query server (operational modes, battery/solar/grid settings, EV charging)
 
 ## Structure
 
 ```
-src/
-├── index.ts              # Entry point: server setup, tools, request handlers
-└── constants/
-    └── registry.ts       # Register addresses, enum maps (EMS modes, grid statuses, etc.)
+packages/
+├── modbus-mcp/
+│   ├── src/
+│   │   ├── index.ts              # Modbus MCP server: setup, tools, handlers
+│   │   └── constants/
+│   │       └── registry.ts       # Register addresses, enum maps
+│   ├── package.json              # @paulczar/sigen-modbus-mcp
+│   └── tsconfig.json
+└── api-mcp/
+    ├── src/
+    │   ├── index.ts              # Cloud API MCP server: setup, tools, handlers
+    │   └── cloud/
+    │       ├── client.ts         # SigenCloudClient (OAuth2, AES encrypt, endpoints)
+    │       └── types.ts          # Cloud API response type interfaces
+    ├── package.json              # @paulczar/sigen-api-mcp
+    └── tsconfig.json
+└── sigen-docs-mcp/
+    ├── src/
+    │   └── index.ts              # GitBook doc query MCP server: query_sigen_docs tool
+    ├── package.json              # @paulczar/sigen-docs-mcp
+    └── tsconfig.json
+docs/
+├── sigencloud-api.md            # Developer access guide
+└── registers.md                 # Auto-generated Modbus register docs
+skills/                          # Companion skills (sigen-status, diagnose, config, docs)
+references/                      # PDFs and reference docs
 ```
 
 ## Core Patterns
@@ -89,6 +115,7 @@ Alarm registers are bitfields. Use `decodeAlarms(registerValue, ALARM_CODE_MAP)`
 - Functions > classes (no OOP wrappers)
 - `console.error` for server logs (stdio is MCP transport)
 - `Promise.all()` for parallel register reads (see `read_ev_status`)
+- Keep `README.md` in sync when adding/removing packages, tools, or changing the CLI
 
 ## Anti-patterns
 - Don't suppress Modbus errors — let `McpError` surface them
@@ -117,7 +144,9 @@ Check `references/README.md` for the full version table and download URLs. Updat
 npm run build   # tsc → dist/
 npm run docs    # generate docs/registers.md from registry.ts
 npm install     # install deps
-npx sigen-mcp --host 192.168.x.x   # run
+npx sigen-modbus-mcp --host 192.168.x.x   # run Modbus TCP server
+npx sigen-api-mcp --cloud-user <email> --cloud-pass <pass>  # run cloud API server
+npx sigen-docs-mcp                        # run GitBook doc query server (no args required)
 ```
 
 ## Skills
@@ -130,9 +159,11 @@ Standard format compatible with Claude Code, Cursor, Codex, Copilot, VS Code, Wi
 
 ```
 skills/
-├── sigen-status/     → "system status", "dashboard", "overview"
-├── sigen-diagnose/   → "something's wrong", "alarm", "troubleshoot", "battery not charging"
-└── sigen-config/     → "change EMS mode", "set charge limit", "configure"
+├── sigen-status/             → "system status", "dashboard", "overview"
+├── sigen-diagnose/           → "something's wrong", "alarm", "troubleshoot", "battery not charging"
+├── sigen-config/             → "change EMS mode", "set charge limit", "configure"
+├── sigen-docs/               → "how do I configure", "what does this setting do", "create a TOU plan"
+└── sigen-config-optimizer/   → "optimize my settings", "create a custom mode", "design a TOU schedule"
 ```
 
 ### .opencode/skills (legacy — OpenCode native)
@@ -146,6 +177,8 @@ Legacy format for OpenCode backward compatibility in `.opencode/skills/sigen-*.m
 | `sigen-status` | "system status", "dashboard", "overview" | Calls `read_plant` + `read_inverter_detail` + `read_plant_energy` + `read_alarms` and synthesizes a formatted dashboard with interpretation |
 | `sigen-diagnose` | "something's wrong", "alarm", "troubleshoot", "battery not charging" | Step-by-step diagnostic: running state → alarms → power flow → battery → EMS mode → energy trends. Includes common issue patterns with likely causes |
 | `sigen-config` | "change EMS mode", "set charge limit", "configure" | Safe configuration workflow: always reads current state first, validates ranges, requires user confirmation before writes |
+| `sigen-docs` | "how do I configure", "what does this setting do", "create a TOU plan" | Queries the official Sigenergy mySigen App GitBook docs via AI Answers API; prefers `query_sigen_docs` MCP tool if available, falls back to direct HTTP query |
+| `sigen-config-optimizer` | "optimize my settings", "create a custom mode", "design a TOU schedule" | Full configuration design workflow: gathers current system state + user rate plan/devices/goals, queries docs for parameter details, then produces a step-by-step mySigen app setup guide. Handles seasonal adjustments |
 
 Load a skill with `skill(name="sigen-status")` and follow its instructions. For OpenCode, use `skill(name="sigen-status")`. For other agents, reference the `skills/<name>/SKILL.md` path.
 
