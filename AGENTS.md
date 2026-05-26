@@ -180,10 +180,10 @@ For each package (`packages/modbus-mcp/`, `packages/api-mcp/`, `packages/sigen-d
    ```bash
    VERSION=$(node -p "require('./packages/modbus-mcp/package.json').version")
    git add packages/*/package.json CHANGELOG.md
-   git commit -m "release @paulczar/sigen-modbus-mcp@$VERSION [skip ci]"
+   git commit -m "release @paulczar/sigen-modbus-mcp@$VERSION"
    git tag "v$VERSION"
    ```
-   Use `[skip ci]` in the commit message to avoid triggering CI on the version bump commit itself. Create an annotated git tag for each bumped package. Push both commit and tags:
+   The push to main will trigger both CI (build verification) and the publish workflow (which compares versions and publishes if changed). Create an annotated git tag for each bumped package. Push both commit and tags:
    ```bash
    git push && git push --tags
    ```
@@ -197,7 +197,7 @@ $ npm version patch -w packages/api-mcp --no-git-tag-version
 $ npm version patch -w packages/sigen-docs-mcp --no-git-tag-version
 $ # edit CHANGELOG.md
 $ git add packages/api-mcp/package.json packages/sigen-docs-mcp/package.json CHANGELOG.md
-$ git commit -m "release @paulczar/sigen-api-mcp@0.1.2, @paulczar/sigen-docs-mcp@0.1.1 [skip ci]"
+$ git commit -m "release @paulczar/sigen-api-mcp@0.1.2, @paulczar/sigen-docs-mcp@0.1.1"
 $ git tag v0.1.2 && git tag v0.1.1
 $ git push && git push --tags
 ```
