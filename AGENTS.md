@@ -149,6 +149,59 @@ npx sigen-api-mcp --cloud-user <email> --cloud-pass <pass>  # run cloud API serv
 npx sigen-docs-mcp                        # run GitBook doc query server (no args required)
 ```
 
+## Release Process
+
+When asked to "cut a release" or "bump version", the publish workflow (`publish.yml`) automatically publishes any package whose `package.json` version differs from the npm registry on push to main. This is a monorepo with independent versioning per package — only packages with actual changes should be bumped.
+
+### Procedure
+
+For each package (`packages/modbus-mcp/`, `packages/api-mcp/`, `packages/sigen-docs-mcp/`):
+
+1. **Detect changes** — check if there are commits touching that package since its last tag:
+   ```bash
+   PACKAGE="packages/modbus-mcp"
+   LAST_TAG=$(git tag --list '*modbus*' --sort=-version:refname | head -1)
+   # or use the version from package.json to find the tag
+   # VERSION=$(node -p "require('./$PACKAGE/package.json').version")
+   # LAST_TAG=$(git tag --list "v$VERSION" | head -1 || git tag --list '*modbus*' --sort=-version:refname | head -1)
+   LOG=$(git log "$LAST_TAG..HEAD" -- "$PACKAGE/" --oneline 2>/dev/null)
+   ```
+   If `$LOG` is non-empty, the package has unreleased changes.
+
+2. **Bump version** — only for packages with unreleased changes. Use `npm version` to update `package.json`:
+   ```bash
+   npm version patch -w packages/modbus-mcp --no-git-tag-version
+   ```
+   Default to **patch** unless the changes warrant a minor or major bump. Do NOT use `--git-tag-version` — tags are created separately at the end.
+
+3. **Update CHANGELOG.md** — add entries under `## [Unreleased]` for each bumped package. Follow the existing format (keepachangelog.com). If the `[Unreleased]` section already has entries, group the new ones under them.
+
+4. **Commit and push** — commit the updated `package.json` files and `CHANGELOG.md` together:
+   ```bash
+   VERSION=$(node -p "require('./packages/modbus-mcp/package.json').version")
+   git add packages/*/package.json CHANGELOG.md
+   git commit -m "release @paulczar/sigen-modbus-mcp@$VERSION [skip ci]"
+   git tag "v$VERSION"
+   ```
+   Use `[skip ci]` in the commit message to avoid triggering CI on the version bump commit itself. Create an annotated git tag for each bumped package. Push both commit and tags:
+   ```bash
+   git push && git push --tags
+   ```
+
+5. **Verify** — the `publish.yml` workflow will run on push, detect the version delta against npm, and publish only the bumped packages. No GitHub Release is needed.
+
+### Example
+
+```
+$ npm version patch -w packages/api-mcp --no-git-tag-version
+$ npm version patch -w packages/sigen-docs-mcp --no-git-tag-version
+$ # edit CHANGELOG.md
+$ git add packages/api-mcp/package.json packages/sigen-docs-mcp/package.json CHANGELOG.md
+$ git commit -m "release @paulczar/sigen-api-mcp@0.1.2, @paulczar/sigen-docs-mcp@0.1.1 [skip ci]"
+$ git tag v0.1.2 && git tag v0.1.1
+$ git push && git push --tags
+```
+
 ## Skills
 
 Companion skills provide higher-level workflows on top of the MCP tools. Available in two formats:
