@@ -62,31 +62,38 @@ Higher-level workflows that use the MCP tools to provide monitoring, diagnostics
 
 Examples below generated from a live 13.25 kW / 40.3 kWh Sigenergy ESS in Brisbane, Australia (SigenStor EC 10.0 SP AU).
 
-### System Dashboard (`sigen-status` via SigenCloud API)
+### System Dashboard (`sigen-status` via Modbus TCP)
 
 ```
-## System Status — 26/05/2026, 8:03:03 am
+## System Status — 26/05/2026, 10:35:52 am
 
-**State**: TOU | On Grid
+**State**: Custom | On Grid | Running
 **Health**: ✅ No active alarms
 
 ### Power Flow
-- **PV**: 1.000 kW
-- **Battery**: -0.600 kW (discharging)
-- **Grid**: Importing 1.400 kW
-- **Load**: 1.600 kW
-- **PV Today**: 0.7 kWh
+- **PV**: 2.873 kW
+- **Battery**: 0.978 kW (2.4% SOC / 100.0% SOH)
+- **Grid**: Exporting 0.020 kW
+- **Load**: 1.855 kW
+- **Plant Active**: 1.875 kW
 
-### System Info
-- **PV Capacity**: 13.25 kW
-- **Battery Capacity**: 40.3 kWh
-- **Has EV DC Charger**: Yes
+### Energy (Lifetime)
+- **PV Generated**: 5,828.9 kWh
+- **Grid Imported**: 2,851.7 kWh
+- **Grid Exported**: 1,515.5 kWh
+- **Battery Charged**: 4,222.7 kWh
+- **Battery Discharged**: 4,118.6 kWh
+- **EV DC Charging**: 1,205.3 kWh
+
+### Inverter
+- **Active Power**: 1.875 kW
+- **Grid Frequency**: 50.02 Hz
+- **Internal Temp**: 49.4°C
+- **Battery SOC**: 2.4% / SOH: 100.0%
+- **PV Power**: 2.873 kW
 ```
 
-With Modbus TCP (local network), additional data is available:
-- Lifetime energy counters (PV, grid import/export, battery cycles, EV charging)
-- Inverter temperature, frequency, phase voltages, power factor
-- Battery SOH, PV string-level data, alarm bitfield decoding
+See [`packages/modbus-mcp/`](./packages/modbus-mcp/) for all available tools.
 
 ### Documentation Query (`sigen-docs` via GitBook AI Answers)
 
