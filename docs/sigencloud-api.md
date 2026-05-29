@@ -24,7 +24,7 @@ Once logged in, you'll see a default application (typically named "Dashboard") a
 |-------|-------------|
 | **Name** | A label for your application. Choose something descriptive, e.g. `sigen-mcp`, `Home Integration`, or `My MCP Server` |
 | **Auth Type** | Currently only `onboard & offboard` is available. This grants your app an `app_key`/`app_secret` pair used to authenticate API requests. "Onboard" authorizes your systems for API access; "offboard" revokes it |
-| **Use in VPP Dispatch** | Controls whether your app can send battery charge/discharge commands. Set to **No** for read-only or basic control (mode switching, smart loads). Set to **Yes** if you need time-ahead battery scheduling or VPP aggregation |
+| **Use in VPP Dispatch** | ⚠️ **NEVER set this to Yes unless you explicitly need VPP aggregation.** Controls whether your app can send battery charge/dispatch commands. Set to **No** for read-only or basic control (mode switching, smart loads). If set to **Yes**, the system will switch to VPP mode (mode 6) and **lock all mode switching** — neither Modbus writes nor cloud API calls can change it. The only recovery is to offboard the system via the Northbound API (requires the same AppKey that enrolled it), and the authorization email link expires after a few days. **There is no documented way to deactivate VPP from the mySigen app.** See the [`sigen-vpp-offboard`](../skills/sigen-vpp-offboard/SKILL.md) skill if you need to recover. |
 | **Description** | Free-text description of what you're building |
 
 ### After Submission
