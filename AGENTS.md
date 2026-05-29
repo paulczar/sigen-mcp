@@ -216,7 +216,8 @@ skills/
 ├── sigen-diagnose/           → "something's wrong", "alarm", "troubleshoot", "battery not charging"
 ├── sigen-config/             → "change EMS mode", "set charge limit", "configure"
 ├── sigen-docs/               → "how do I configure", "what does this setting do", "create a TOU plan"
-└── sigen-config-optimizer/   → "optimize my settings", "create a custom mode", "design a TOU schedule"
+├── sigen-config-optimizer/   → "optimize my settings", "create a custom mode", "design a TOU schedule"
+└── sigen-vpp-offboard/       → "stuck in VPP", "VPP offboard", "exit VPP"
 ```
 
 ### .opencode/skills (legacy — OpenCode native)
@@ -232,6 +233,7 @@ Legacy format for OpenCode backward compatibility in `.opencode/skills/sigen-*.m
 | `sigen-config` | "change EMS mode", "set charge limit", "configure" | Safe configuration workflow: always reads current state first, validates ranges, requires user confirmation before writes |
 | `sigen-docs` | "how do I configure", "what does this setting do", "create a TOU plan" | Queries the official Sigenergy mySigen App GitBook docs via AI Answers API; prefers `query_sigen_docs` MCP tool if available, falls back to direct HTTP query |
 | `sigen-config-optimizer` | "optimize my settings", "create a custom mode", "design a TOU schedule" | Full configuration design workflow: gathers current system state + user rate plan/devices/goals, queries docs for parameter details, then produces a step-by-step mySigen app setup guide. Handles seasonal adjustments |
+| `sigen-vpp-offboard` | "stuck in VPP", "VPP offboard", "exit VPP", "leave VPP program" | VPP offboarding via Northbound API — offboards the developer app to release the system from VPP lock, then restores the user's preferred operating mode. See the SKILL.md for the full procedure |
 
 Load a skill with `skill(name="sigen-status")` and follow its instructions. For OpenCode, use `skill(name="sigen-status")`. For other agents, reference the `skills/<name>/SKILL.md` path.
 

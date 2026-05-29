@@ -23,6 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **NB API tools** — `cloud_nb_offboard`, `cloud_nb_onboard`, `cloud_nb_switch_mode` via Northbound API (AppKey auth)
+  - `cloud_nb_offboard` — offboard system from developer app to release VPP mode lock
+  - `cloud_nb_onboard` — onboard system to developer app for NB instruction access
+  - `cloud_nb_switch_mode` — set mode via NB instruction endpoint (0=MSC, 5=FFG, 6=VPP, 8=NBI)
+- **`cloud_set_ems_mode` tool** — set EMS mode via End-User API (user/pass auth, no AppKey needed) using `PUT /device/energy-profile/mode`
+- **sigen-vpp-offboard skill** — `skills/sigen-vpp-offboard/SKILL.md` with 6-step VPP recovery workflow (confirm → offboard → verify → ask → switch → verify)
+- **VPP warning** — `docs/sigencloud-api.md` now has a prominent ⚠️ warning against setting "Use in VPP Dispatch" to Yes, explaining the lock and recovery path
+
+### Added
+
 - **sigen-docs-mcp** — new `@paulczar/sigen-docs-mcp` package with `query_sigen_docs` tool
   - Wraps Sigenergy's GitBook AI Answers API for natural-language doc queries
   - Covers operational modes, solar/battery/grid settings, EV charging, peak shaving
