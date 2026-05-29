@@ -83,6 +83,12 @@ export interface HistoryResponse {
   [key: string]: unknown;
 }
 
+/** Response from PUT /device/energy-profile/mode */
+export interface SetModeResponse {
+  result?: boolean;
+  [key: string]: unknown;
+}
+
 /** Alarm page entry from device/alarm/page */
 export interface AlarmEntry {
   id?: number;

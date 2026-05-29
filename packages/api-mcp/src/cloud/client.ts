@@ -7,6 +7,7 @@ import type {
   SmartLoad,
   HistoryResponse,
   AlarmPage,
+  SetModeResponse,
 } from "./types.js";
 
 const AES_KEY = Buffer.from("sigensigensigenp", "utf-8");
@@ -225,6 +226,7 @@ export class SigenCloudClient {
 
   private async northboundRequest<T>(method: string, path: string, opts?: {
     params?: Record<string, string>;
+    body?: unknown;
   }): Promise<T> {
     await this.ensureNorthboundAuth();
     const url = new URL(`${this.baseUrl}${path}`);
@@ -239,6 +241,7 @@ export class SigenCloudClient {
         Authorization: `Bearer ${this.northboundToken!.accessToken}`,
         "Content-Type": "application/json",
       },
+      body: opts?.body ? JSON.stringify(opts.body) : undefined,
     });
     if (!resp.ok) {
       const body = await resp.text().catch(() => "");
@@ -291,6 +294,31 @@ export class SigenCloudClient {
   async getCurrentMode(): Promise<CurrentMode> {
     const sid = await this.ensureStationId();
     return this.request<CurrentMode>("GET", `/device/energy-profile/mode/current/${sid}`);
+  }
+
+  async setOperationalMode(mode: number, profileId = -1): Promise<SetModeResponse> {
+    const sid = await this.ensureStationId();
+    return this.request<SetModeResponse>("PUT", "/device/energy-profile/mode", {
+      body: { stationId: sid, operationMode: mode, profileId },
+    });
+  }
+
+  async northboundSwitchMode(systemId: string, mode: number): Promise<Record<string, unknown>> {
+    return this.northboundRequest<Record<string, unknown>>("PUT", "/openapi/instruction/settings", {
+      body: { systemId, energyStorageOperationMode: mode },
+    });
+  }
+
+  async northboundOnboard(systemIds: string[]): Promise<Record<string, unknown>> {
+    return this.northboundRequest<Record<string, unknown>>("POST", "/openapi/board/onboard", {
+      body: systemIds,
+    });
+  }
+
+  async northboundOffboard(systemIds: string[]): Promise<Record<string, unknown>> {
+    return this.northboundRequest<Record<string, unknown>>("POST", "/openapi/board/offboard", {
+      body: systemIds,
+    });
   }
 
   async getHistory(date: string, level = "day"): Promise<HistoryResponse> {

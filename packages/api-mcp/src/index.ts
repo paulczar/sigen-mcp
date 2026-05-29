@@ -110,6 +110,50 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
+    {
+      name: "cloud_set_ems_mode",
+      description: "Set EMS operating mode via End-User API (0=MaxSelfConsumption, 1=AI, 2=TOU, 5=FullFeedIn, 6=VPP, 7=RemoteEMS, 9=Custom). Use profileId for custom modes. Does NOT work when system is in VPP mode — use cloud_nb_offboard first.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          mode: { type: "number", description: "EMS mode value (0-9)" },
+          profileId: { type: "number", default: -1, description: "Profile ID for custom mode 9 (default: -1)" },
+        },
+        required: ["mode"],
+      },
+    },
+    {
+      name: "cloud_nb_offboard",
+      description: "Offboard (remove) a system from the developer app via Northbound API. Use this to recover a system stuck in VPP mode — forces the system out of VPP. Requires AppKey/AppSecret. After offboard, use cloud_set_ems_mode to set the desired mode.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          systemId: { type: "string", description: "System ID or stationCode (e.g. TAETN1768371966). Defaults to the configured station." },
+        },
+      },
+    },
+    {
+      name: "cloud_nb_onboard",
+      description: "Onboard (authorize) a system to this developer app via Northbound API. Required before NB instruction endpoints (switch_mode, battery dispatch) will work. Requires AppKey/AppSecret.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          systemId: { type: "string", description: "System ID or stationCode (e.g. TAETN1768371966). Defaults to the configured station." },
+        },
+      },
+    },
+    {
+      name: "cloud_nb_switch_mode",
+      description: "Set EMS mode via Northbound API instruction endpoint (AppKey auth). Uses NB mode values: 0=MSC, 5=FFG, 6=VPP, 8=NBI. System must be onboarded first.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          systemId: { type: "string", description: "System ID stationCode (e.g. TAETN1768371966). Defaults to the configured station." },
+          mode: { type: "number", description: "NB mode value: 0=MSC, 5=FFG, 6=VPP, 8=NBI" },
+        },
+        required: ["mode"],
+      },
+    },
   ],
 }));
 
@@ -242,6 +286,45 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           lines.push(`  [${a.alarmTime || "?"}] ${a.alarmDesc || a.alarmCode || "Unknown"}`);
         }
         return { content: [{ type: "text", text: lines.join("\n") }] };
+      }
+
+      case "cloud_set_ems_mode": {
+        const mode = args?.mode as number | undefined;
+        if (mode == null) throw new McpError(ErrorCode.InvalidParams, "mode is required");
+        const profileId = (args?.profileId as number | undefined) ?? -1;
+        const result = await cloudClient!.setOperationalMode(mode, profileId);
+        return {
+          content: [{ type: "text", text: `Set operational mode to ${mode}${result.result !== undefined ? ` (success: ${result.result})` : ""}` }],
+        };
+      }
+
+      case "cloud_nb_offboard": {
+        const info = await cloudClient!.getStationInfo();
+        const systemId = (args?.systemId as string | undefined) ?? (info as any).stationCode ?? info.stationId;
+        const result = await cloudClient!.northboundOffboard([systemId]);
+        return {
+          content: [{ type: "text", text: `Offboard result for ${systemId}: ${JSON.stringify(result)}` }],
+        };
+      }
+
+      case "cloud_nb_onboard": {
+        const info = await cloudClient!.getStationInfo();
+        const systemId = (args?.systemId as string | undefined) ?? (info as any).stationCode ?? info.stationId;
+        const result = await cloudClient!.northboundOnboard([systemId]);
+        return {
+          content: [{ type: "text", text: `Onboard result for ${systemId}: ${JSON.stringify(result)}` }],
+        };
+      }
+
+      case "cloud_nb_switch_mode": {
+        const mode = args?.mode as number | undefined;
+        if (mode == null) throw new McpError(ErrorCode.InvalidParams, "mode is required");
+        const info = await cloudClient!.getStationInfo();
+        const systemId = (args?.systemId as string | undefined) ?? (info as any).stationCode ?? info.stationId;
+        const result = await cloudClient!.northboundSwitchMode(systemId, mode);
+        return {
+          content: [{ type: "text", text: `Set NB mode to ${mode} for ${systemId}: ${JSON.stringify(result)}` }],
+        };
       }
 
       default:
