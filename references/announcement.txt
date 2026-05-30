@@ -21,11 +21,12 @@ I open-sourced the result: **sigen-mcp** — a monorepo of MCP (Model Context Pr
 **sigen-docs-mcp** — GitBook documentation query
 - Ask questions about operational modes, battery settings, grid config, EV charging, TOU schedules — gets answers straight from the official Sigenergy mySigen docs
 
-**Companion skills** — Higher-level workflows:
+**Companion skills** — Higher-level workflows that bundle multiple MCP tools into one-shot prompts:
 - `sigen-status` — One-shot system dashboard (PV, battery, grid, load, alarms)
 - `sigen-diagnose` — Step-by-step troubleshooting when something's off
 - `sigen-config` — Safe config changes with pre-read validation
-- `sigen-docs` — Query official docs
+- `sigen-docs` — Query official Sigenergy docs
+- `sigen-config-optimizer` (⚠️ experimental) — Designs custom TOU/operational mode schedules from your rate plan and goals
 - `sigen-vpp-offboard` — Recovery path if you accidentally enable VPP dispatch mode
 
 **Why MCP?**
