@@ -101,7 +101,9 @@ All MIT licensed. Contributions welcome.
 
 *Live output from a 13.25 kW / 40.3 kWh Sigenergy system in Brisbane.*
 
-Then a plain-text summary explaining what it means (battery trajectory, solar vs load, notable flags, recommendations).
+Followed by a plain-text summary:
+
+> Battery's been climbing steadily all morning — 2.1% → 3.0% since first check. Six kilowatts of solar with ~4 kW house load leaves 2 kW going into the battery. At this net charge rate it'll take about 18 hours to fill 40 kWh from near-empty, which won't happen off solar alone in winter. The Custom/TOU schedule is probably the bottleneck — check whether your charge window aligns with this solar production period. Grid draw is negligible, so the house is essentially running off solar with the excess trickling into the battery.
 
 **Ask docs questions** — "how do I set up Time-based Control mode to charge during solar and discharge during peak evening rates?"
 
