@@ -99,6 +99,8 @@ All MIT licensed. Contributions welcome.
 ====================================================
 ```
 
+*Live output from a 13.25 kW / 40.3 kWh Sigenergy system in Brisbane.*
+
 Then a plain-text summary explaining what it means (battery trajectory, solar vs load, notable flags, recommendations).
 
 **Ask docs questions** — "how do I set up Time-based Control mode to charge during solar and discharge during peak evening rates?"

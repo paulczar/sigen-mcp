@@ -93,7 +93,7 @@ Examples below generated from a live 13.25 kW / 40.3 kWh Sigenergy ESS in Brisba
 ====================================================
 ```
 
-*Generated from a live 13.25 kW / 40.3 kWh system in Brisbane — battery slowly recovering from overnight drain.*
+*Live output from a 13.25 kW / 40.3 kWh Sigenergy system in Brisbane — battery slowly recovering from overnight drain.*
 
 See [`packages/modbus-mcp/`](./packages/modbus-mcp/) for all available tools.
 
