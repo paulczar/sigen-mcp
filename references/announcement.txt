@@ -101,6 +101,18 @@ All MIT licensed. Contributions welcome.
 
 Then a plain-text summary explaining what it means (battery trajectory, solar vs load, notable flags, recommendations).
 
+**Ask docs questions** — "how do I configure my Catch Solar Relay for surplus solar?"
+
+> Use **Time-based Control Mode** for the battery, and configure the Catch Solar Relay as a **Smart load**.
+> 
+> * Set **Operational mode → Time-based Control Mode**.
+> * In **Battery Settings**, set **Charge Cut-off SOC** to your full target.
+> * Add the Catch Solar Relay under **Smart load**.
+> * Set **Control Mode → Auto (Time-based) → Surplus PV Only**.
+> * Set **Starting Power** and **Rated Power** in **Smart Load Settings**.
+
+Answers come straight from the official Sigenergy mySigen App GitBook docs.
+
 **Our setup it was tested on:**
 - SigenStor EC 10.0 SP AU (10 kW single-phase)
 - 5× BAT 8.0 (40.3 kWh, 100% SOH)
