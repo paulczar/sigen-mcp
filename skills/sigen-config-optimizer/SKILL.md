@@ -1,10 +1,13 @@
 ---
 name: sigen-config-optimizer
 description: |
-  Full configuration design workflow: gathers current system state + user rate plan/devices/goals, queries docs for parameter details, researches device specifications, then produces a comprehensive markdown configuration report with step-by-step mySigen app setup instructions. Handles seasonal adjustments.
+  ⚠️ EXPERIMENTAL — needs tuning. Full configuration design workflow: gathers current system state + user rate plan/devices/goals, queries docs for parameter details, researches device specifications, then produces a comprehensive markdown configuration report with step-by-step mySigen app setup instructions. Handles seasonal adjustments.
 ---
 
 # sigen-config-optimizer — Operational Mode Configuration Designer
+
+> ⚠️ **EXPERIMENTAL** — This skill is a work in progress. The generated configuration reports may contain inaccuracies or miss edge cases. Always verify recommendations against the mySigen app and official docs before applying. Feedback and refinements welcome — expect iterations.  
+
 
 Designs optimal Sigenergy operational mode(s) and produces a **savable markdown report** that covers every device, every rate plan detail, every configuration step, and seasonal variations. The report is a living document that gets refined as equipment or habits change.
 

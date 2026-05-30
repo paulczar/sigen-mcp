@@ -56,7 +56,7 @@ Higher-level workflows that use the MCP tools to provide monitoring, diagnostics
 | [`sigen-diagnose`](./skills/sigen-diagnose/SKILL.md) | "something's wrong", "alarm", "troubleshoot" | Step-by-step diagnostic: state → alarms → power flow → battery → trends |
 | [`sigen-config`](./skills/sigen-config/SKILL.md) | "change EMS mode", "set charge limit", "configure" | Safe configuration with pre-read validation and user confirmation |
 | [`sigen-docs`](./skills/sigen-docs/SKILL.md) | "how do I configure", "what does this setting do" | Queries Sigenergy mySigen App docs via MCP or direct GitBook API |
-| [`sigen-config-optimizer`](./skills/sigen-config-optimizer/SKILL.md) | "optimize my settings", "create a custom mode", "design a TOU schedule" | Full configuration design with system snapshot, rate plan, and seasonal profiles |
+| [`sigen-config-optimizer`](./skills/sigen-config-optimizer/SKILL.md) ⚠️ | "optimize my settings", "create a custom mode", "design a TOU schedule" | Full configuration design with system snapshot, rate plan, and seasonal profiles — **experimental, needs tuning** |
 
 ## Example Output
 
