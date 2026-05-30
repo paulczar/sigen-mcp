@@ -1,7 +1,7 @@
 {
   "$schema": "https://code.claude.com/schemas/marketplace.schema.json",
   "name": "sigen-mcp",
-  "description": "Sigenergy ESS inverter MCP servers and companion skills",
+  "description": "Sigenergy ESS inverter management — Modbus TCP control, SigenCloud API, and GitBook doc query. Monitor PV production, battery SOC/SOH, grid import/export, set EMS modes, diagnose alarms, and configure TOU schedules. Companion skills for the @paulczar/sigen-*-mcp npm MCP servers.",
   "owner": {
     "name": "paulczar"
   },
@@ -9,7 +9,7 @@
     {
       "name": "sigen-mcp-skills",
       "source": "./",
-      "description": "Sigenergy ESS skills for Claude Code — monitor, diagnose, configure, and query documentation for Sigenergy ESS inverters via Modbus TCP and SigenCloud API",
+      "description": "Sigenergy ESS companion skills — dashboard (sigen-status), diagnostics (sigen-diagnose), configuration (sigen-config), docs (sigen-docs), config optimizer (sigen-config-optimizer ⚠️), and VPP offboarding (sigen-vpp-offboard). Ships with MCP server templates for all three @paulczar/sigen-*-mcp packages.",
       "skills": ["skills/"]
     }
   ]

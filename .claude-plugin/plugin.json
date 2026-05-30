@@ -1,10 +1,28 @@
 {
   "name": "sigen-mcp-skills",
-  "description": "Sigenergy ESS skills for Claude Code — monitor, diagnose, configure, and query documentation for Sigenergy ESS inverters via Modbus TCP and SigenCloud API",
-  "version": "0.1.0",
+  "description": "Sigenergy ESS — monitor, diagnose, configure, and query docs for your Sigenergy inverter via Modbus TCP, SigenCloud API, and GitBook docs. Companion skills for the @paulczar/sigen-*-mcp MCP server packages.",
+  "version": "0.1.1",
   "author": {
     "name": "paulczar"
   },
   "repository": "https://github.com/paulczar/sigen-mcp",
-  "license": "MIT"
+  "license": "MIT",
+  "skills": ["skills/"],
+  "mcpServers": {
+    "sigen-modbus-mcp": {
+      "description": "Read 300+ Modbus registers and write EMS mode, charge/discharge limits. Requires your inverter's LAN IP.",
+      "command": "npx",
+      "args": ["-y", "@paulczar/sigen-modbus-mcp", "--host", "YOUR_MODBUS_HOST_IP"]
+    },
+    "sigen-api-mcp": {
+      "description": "Cloud station info, energy flow, history, alarms, EMS mode switching. Requires your SigenCloud credentials.",
+      "command": "npx",
+      "args": ["-y", "@paulczar/sigen-api-mcp", "--cloud-user", "YOUR_EMAIL", "--cloud-pass", "YOUR_PASSWORD"]
+    },
+    "sigen-docs-mcp": {
+      "description": "Query official Sigenergy mySigen App GitBook docs — operational modes, battery settings, EV charging, TOU schedules.",
+      "command": "npx",
+      "args": ["-y", "@paulczar/sigen-docs-mcp"]
+    }
+  }
 }
