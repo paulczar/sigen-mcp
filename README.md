@@ -99,24 +99,18 @@ See [`packages/modbus-mcp/`](./packages/modbus-mcp/) for all available tools.
 
 ### Documentation Query (`sigen-docs` via GitBook AI Answers)
 
-**Question:** I have a Catch Solar Relay for hot water. How can I set up my Sigenergy system so excess solar after the battery is full triggers the relay, while prioritizing self-consumption during peak rates 4–11pm? What EMS mode and settings should I use?
+**Question:** How do I set up Time-based Control mode to charge the battery during solar hours and discharge during peak evening rates?
 
 **Answer:**
 
-Use **Time-based Control Mode** for the battery, and configure the Catch Solar Relay as a **Smart load**.
+Set **Operational mode → Time-based Control Mode** first. Then create two schedules:
 
-* Set **Operational mode → Time-based Control Mode**.
-* Create a **Self-Consumption** period for **4:00 pm–11:00 pm**.
-  During that period, PV serves the loads first. Excess PV charges the battery. The battery can also discharge to loads.
-* Leave other periods unspecified if you want PV to **prioritize home loads**, then charge the battery, with **no battery discharge** outside your scheduled window.
-* In **Battery Settings**, set **Charge Cut-off SOC** to your full target.
+1. **Solar hours** — set a **Charging** or **Self-Consumption** period so PV can feed loads and charge the battery. If needed, set **Charging Source Priority** to **PV before Grid**.
+2. **Peak evening** — set a **Discharging** period with **Maximum discharging power for BAT**, **Maximum power for exporting to grid**, and **Discharge Cut-off SOC from BAT to Grid**.
 
-For the relay:
-* Add the Catch Solar Relay under **Smart load**.
-* Set **Control Mode → Auto (Time-based) → Surplus PV Only**.
-* Set **Starting Power** and **Rated Power** in **Smart Load Settings → Operation Settings**.
+Any hours you don't specify run in standby-like behavior: PV powers the load first, excess PV charges the battery, and the battery does **not** discharge.
 
-If you also want to limit grid import during peak hours, add **Peak Shaving** in **Grid Settings**.
+Time-based control is designed for areas with peak and valley electricity prices and large price gaps.
 
 ## Claude Code
 

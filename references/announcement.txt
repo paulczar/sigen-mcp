@@ -101,15 +101,14 @@ All MIT licensed. Contributions welcome.
 
 Then a plain-text summary explaining what it means (battery trajectory, solar vs load, notable flags, recommendations).
 
-**Ask docs questions** — "how do I configure my Catch Solar Relay for surplus solar?"
+**Ask docs questions** — "how do I set up Time-based Control mode to charge during solar and discharge during peak evening rates?"
 
-> Use **Time-based Control Mode** for the battery, and configure the Catch Solar Relay as a **Smart load**.
+> Set **Operational mode → Time-based Control Mode**. Then create two schedules:
 > 
-> * Set **Operational mode → Time-based Control Mode**.
-> * In **Battery Settings**, set **Charge Cut-off SOC** to your full target.
-> * Add the Catch Solar Relay under **Smart load**.
-> * Set **Control Mode → Auto (Time-based) → Surplus PV Only**.
-> * Set **Starting Power** and **Rated Power** in **Smart Load Settings**.
+> 1. **Solar hours** — set a **Charging** or **Self-Consumption** period so PV charges the battery.
+> 2. **Peak evening** — set a **Discharging** period with max discharging power and cut-off SOC.
+> 
+> Any hours you don't specify default to: PV powers the load first, excess charges the battery, battery does **not** discharge.
 
 Answers come straight from the official Sigenergy mySigen App GitBook docs.
 
