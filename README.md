@@ -144,11 +144,24 @@ cp -r skills/* ~/.claude/skills/
 
 After installation, skills are namespaced as `/sigen-mcp-skills:sigen-status`, `/sigen-mcp-skills:sigen-config`, etc. Run `/help` to see them listed.
 
-### Other agents
+### OpenCode
 
-- **OpenCode** — load via `skill(name="sigen-status")` (built-in support)
-- **Claude Code (Cursor, Windsurf, etc.)** — reference `skills/<name>/SKILL.md` in your project's `.claude/` instructions or agent config
-- **Generic AI agents** — include the SKILL.md content in your system prompt
+OpenCode loads skills from `.opencode/skills/`. The repo ships OpenCode-compatible skills there already:
+
+```bash
+# Clone and they're auto-loaded
+git clone https://github.com/paulczar/sigen-mcp.git
+cd sigen-mcp
+
+# Or copy skills to your project
+cp -r .opencode/skills/* /your/project/.opencode/skills/
+```
+
+Then use `skill(name="sigen-status")` to load a skill at runtime.
+
+### Other agents (Cursor, Windsurf, etc.)
+
+Reference `skills/<name>/SKILL.md` in your project's agent config or include the content in your system prompt.
 
 ## References
 
