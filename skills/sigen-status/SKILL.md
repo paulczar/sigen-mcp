@@ -58,31 +58,52 @@ If alarms are present, list them all.
 
 ### 5. Synthesize
 
-Combine the data into a structured report:
+Combine the data into an ASCII dashboard followed by a text summary.
 
-```markdown
-## System Status
+**Dashboard template** — use plain ASCII (no Unicode box drawing) for consistent rendering:
 
-**State**: {EMS Mode} | {Grid Status} | {Running State}
-**Health**: {alarm count} active alarms
+```
+====================================================
+  SigenStor EC 10.0 SP AU     {day} {date} {time}
+====================================================
+  {EMS Mode}  |  {Grid}  |  {Running State}  |  {alarms}
+----------------------------------------------------
+  {PV} kW PV
+    |
+    +-- Load   {load} kW
+    +-- Bat {up/down} {ess_power} kW  (SOC {soc}%, SOH {soh}%)
+    +-- Grid   {grid_power} kW  ({buying/exporting})
+----------------------------------------------------
+  Battery:  {soc}% SOC  |  {soh}% SOH  |  {temp}C
+  Grid:     {freq} Hz  |  {voltage} V   |  PF {pf}
+----------------------------------------------------
+  Lifetime:
+    PV Generated    {pv_total} kWh
+    Grid Import     {import} kWh
+    Grid Export     {export} kWh
+    Bat Cycle       {bat_charge} / {bat_discharge} kWh
+    EV DC Charged   {ev_dc} kWh
+    Today's Use     {today} kWh
+====================================================
+```
 
-### Power Flow
-- PV: {x} kW
-- Battery: {x} kW ({x}% SOC)
-- Grid: {x} kW {importing/exporting}
-- Load: {x} kW
-- Power Factor: {x}
+**Summary** — after the dashboard, add a brief text interpretation covering:
 
-### Energy (Lifetime)
-- PV Generated: {x} kWh
-- Grid Imported: {x} kWh / Exported: {x} kWh
-- Battery: {x} kWh charged / {x} kWh discharged
-- EV Charging: {x} kWh
+1. **Battery trajectory** — is SOC going up or down? How fast? Time to full/empty estimate if relevant.
+2. **Solar vs load** — is PV covering the house? Any notable surplus or deficit?
+3. **Grid interaction** — buying or selling? How much?
+4. **Notable flags** — low SOC, high temp, alarms, poor power factor, frequency deviation
+5. **Recommendation** — one sentence on what the user might want to change or watch
 
-### Inverter
-- Frequency: {x} Hz
-- Internal Temp: {x}°C
-- Battery SOC: {x}% / SOH: {x}%
+Example:
+
+```
+Battery's been climbing steadily all morning — 2.1% → 2.9% since first check. Six kilowatts
+of solar with ~4 kW house load leaves 2 kW going into the battery. At this net charge rate
+it'll take about 18 hours to fill 40 kWh from near-empty, which won't happen off solar alone
+in winter. The Custom/TOU schedule is probably the bottleneck — check whether your charge
+window aligns with this solar production period. Grid draw is negligible (0.01 kW), so the
+house is essentially running off solar with the excess trickling into the battery.
 ```
 
 ### Interpretation Notes

@@ -70,33 +70,30 @@ Examples below generated from a live 13.25 kW / 40.3 kWh Sigenergy ESS in Brisba
 ### System Dashboard (`sigen-status` via Modbus TCP)
 
 ```
-## System Status — 26/05/2026, 10:35:52 am
-
-**State**: Custom | On Grid | Running
-**Health**: ✅ No active alarms
-
-### Power Flow
-- **PV**: 2.873 kW
-- **Battery**: 0.978 kW (2.4% SOC / 100.0% SOH)
-- **Grid**: Exporting 0.020 kW
-- **Load**: 1.855 kW
-- **Plant Active**: 1.875 kW
-
-### Energy (Lifetime)
-- **PV Generated**: 5,828.9 kWh
-- **Grid Imported**: 2,851.7 kWh
-- **Grid Exported**: 1,515.5 kWh
-- **Battery Charged**: 4,222.7 kWh
-- **Battery Discharged**: 4,118.6 kWh
-- **EV DC Charging**: 1,205.3 kWh
-
-### Inverter
-- **Active Power**: 1.875 kW
-- **Grid Frequency**: 50.02 Hz
-- **Internal Temp**: 49.4°C
-- **Battery SOC**: 2.4% / SOH: 100.0%
-- **PV Power**: 2.873 kW
+====================================================
+  SigenStor EC 10.0 SP AU     Sun 31 May 09:00
+====================================================
+  Custom  |  On Grid  |  Running  |  No alarms
+----------------------------------------------------
+  6.05 kW PV
+    |
+    +-- Load   4.04 kW
+    +-- Bat up 2.04 kW  (SOC 3.0%, SOH 100%)
+    +-- Grid   0.03 kW  (buying)
+----------------------------------------------------
+  Battery:  3.0% SOC  |  100% SOH  |  49.2C
+  Grid:     50.02 Hz  |  241.2 V   |  PF 0.994
+----------------------------------------------------
+  Lifetime:
+    PV Generated    5,952 kWh
+    Grid Import     3,055 kWh
+    Grid Export     1,559 kWh
+    Bat Cycle       4,408 / 4,298 kWh
+    EV DC Charged   1,238 kWh
+====================================================
 ```
+
+*Generated from a live 13.25 kW / 40.3 kWh system in Brisbane — battery slowly recovering from overnight drain.*
 
 See [`packages/modbus-mcp/`](./packages/modbus-mcp/) for all available tools.
 
