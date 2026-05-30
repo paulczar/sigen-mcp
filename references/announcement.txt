@@ -1,0 +1,74 @@
+Title: I built an open-source MCP toolchain for Sigenergy ESS — local Modbus control, cloud API, and AI assistant integration
+
+Body:
+
+I've been running a Sigenergy system (SigenStor EC 10.0 SP AU, 40.3 kWh battery, 13.25 kW solar) in Brisbane and wanted proper local control without being locked to the cloud or the mySigen app.
+
+I open-sourced the result: **sigen-mcp** — a monorepo of MCP (Model Context Protocol) servers that give AI coding assistants like Claude Code, Cursor, OpenCode, etc. direct read/write access to your Sigenergy system.
+
+**What's in it:**
+
+**sigen-modbus-mcp** — Local Modbus TCP server
+- Read 300+ registers: PV production, battery SOC/SOH, grid import/export, power flow, inverter temps, alarms
+- Write EMS mode, charge/discharge limits, grid setpoints
+- No cloud dependency — works entirely on your LAN
+- Register definitions for slaves 247 (plant), 1 (inverter), DC charger, AC charger
+
+**sigen-api-mcp** — SigenCloud API
+- Station info, energy flow, historical data, alarm history
+- EMS mode switching, VPP on/offboarding via Northbound API
+
+**sigen-docs-mcp** — GitBook documentation query
+- Ask questions about operational modes, battery settings, grid config, EV charging, TOU schedules — gets answers straight from the official Sigenergy mySigen docs
+
+**Companion skills** — Higher-level workflows:
+- `sigen-status` — One-shot system dashboard (PV, battery, grid, load, alarms)
+- `sigen-diagnose` — Step-by-step troubleshooting when something's off
+- `sigen-config` — Safe config changes with pre-read validation
+- `sigen-docs` — Query official docs
+- `sigen-vpp-offboard` — Recovery path if you accidentally enable VPP dispatch mode
+
+**Why MCP?**
+
+MCP is an open protocol that lets AI agents use tools — so instead of memorising register addresses and API endpoints, you can just say "what's my system status" or "set the battery to charge from the grid at 11am" and the agent handles the Modbus writes or API calls.
+
+**Quick start:**
+
+**Claude Code users** — install everything in one command:
+
+```
+/plugin install paulczar/sigen-mcp
+```
+
+Auto-loads all companion skills and MCP servers. Fill in your host IP and cloud credentials after install.
+
+**Any MCP client** — just add to your config:
+
+```json
+{
+  "mcpServers": {
+    "sigen-modbus-mcp": {
+      "command": "npx",
+      "args": ["-y", "@paulczar/sigen-modbus-mcp", "--host", "192.168.x.x"]
+    }
+  }
+}
+```
+
+Or clone and run locally: `github.com/paulczar/sigen-mcp`
+
+**Published on npm:**
+- `@paulczar/sigen-modbus-mcp`
+- `@paulczar/sigen-api-mcp`
+- `@paulczar/sigen-docs-mcp`
+
+All MIT licensed. Contributions welcome.
+
+**Our setup it was tested on:**
+- SigenStor EC 10.0 SP AU (10 kW single-phase)
+- 5× BAT 8.0 (40.3 kWh, 100% SOH)
+- 13.25 kW solar (9.25 north + 4 east)
+- DC EV charger
+- Catch Solar Relay for hot water
+
+Would love feedback, issues, PRs — especially from other Sigenergy owners.

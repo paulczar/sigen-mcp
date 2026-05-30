@@ -14,16 +14,21 @@ All packages are published to npm — no clone or build needed for end users.
 
 ## Quick start
 
-```bash
-# Just add the config below to your MCP client — no install needed
+### Claude Code (easiest — one command)
 
-# Or if you want to clone and develop locally:
-# git clone https://github.com/paulczar/sigen-mcp
-# npm install
-# npm run build
+```bash
+/plugin install paulczar/sigen-mcp
 ```
 
-## MCP Configuration
+This auto-loads all 6 companion skills and configures the three MCP servers. After install, fill in your Modbus host IP and cloud credentials:
+
+```
+/plugin config sigen-mcp-skills
+```
+
+Skills are namespaced as `/sigen-mcp-skills:sigen-status`, `/sigen-mcp-skills:sigen-config`, etc. Run `/help` to see them listed.
+
+### Any MCP client (Claude Desktop, Cursor, OpenCode, etc.)
 
 Add one or more servers to your MCP client config:
 
