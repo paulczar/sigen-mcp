@@ -95,6 +95,18 @@ client.setTimeout(5000);
 client.on("close", () => { connected = false; });
 client.on("error", () => { connected = false; });
 
+// Run Modbus operations strictly one at a time. Overlapping requests on the
+// shared client (e.g. the Promise.all reads in read_plant/read_alarms) race
+// in ensureConnected() and setID(), which left the server unable to read
+// until restarted. Each queued operation still fails within the 5s client
+// timeout, so one bad request can't block the queue.
+let modbusQueue: Promise<unknown> = Promise.resolve();
+function serialized<T>(fn: () => Promise<T>): Promise<T> {
+  const run = modbusQueue.then(fn, fn);
+  modbusQueue = run.catch(() => {});
+  return run;
+}
+
 async function ensureConnected() {
   if (connected) return;
   // If a previous connection is still considered open by the client, it
@@ -116,67 +128,75 @@ async function ensureConnected() {
 }
 
 async function readRegister(address: number, slave: number, signed = false): Promise<number> {
-  await ensureConnected();
-  try {
-    client.setID(slave);
-    const pa = toProtoAddr(address);
-    const res = regType(address) === "holding"
-      ? await client.readHoldingRegisters(pa, 1)
-      : await client.readInputRegisters(pa, 1);
-    const val = res.data[0];
-    return signed && val >= 0x8000 ? val - 0x10000 : val;
-  } catch (err) {
-    const msg = errMsg(err);
-    if (!msg.startsWith("Modbus exception")) connected = false;
-    throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address}: ${msg}`);
-  }
+  return serialized(async () => {
+    await ensureConnected();
+    try {
+      client.setID(slave);
+      const pa = toProtoAddr(address);
+      const res = regType(address) === "holding"
+        ? await client.readHoldingRegisters(pa, 1)
+        : await client.readInputRegisters(pa, 1);
+      const val = res.data[0];
+      return signed && val >= 0x8000 ? val - 0x10000 : val;
+    } catch (err) {
+      const msg = errMsg(err);
+      if (!msg.startsWith("Modbus exception")) connected = false;
+      throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address}: ${msg}`);
+    }
+  });
 }
 
 async function readRegister32(address: number, slave: number): Promise<number> {
-  await ensureConnected();
-  try {
-    client.setID(slave);
-    const pa = toProtoAddr(address);
-    const res = regType(address) === "holding"
-      ? await client.readHoldingRegisters(pa, 2)
-      : await client.readInputRegisters(pa, 2);
-    const raw = (res.data[0] << 16) | res.data[1];
-    return raw >= 0x80000000 ? raw - 0x100000000 : raw;
-  } catch (err) {
-    const msg = errMsg(err);
-    if (!msg.startsWith("Modbus exception")) connected = false;
-    throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address} (32-bit): ${msg}`);
-  }
+  return serialized(async () => {
+    await ensureConnected();
+    try {
+      client.setID(slave);
+      const pa = toProtoAddr(address);
+      const res = regType(address) === "holding"
+        ? await client.readHoldingRegisters(pa, 2)
+        : await client.readInputRegisters(pa, 2);
+      const raw = (res.data[0] << 16) | res.data[1];
+      return raw >= 0x80000000 ? raw - 0x100000000 : raw;
+    } catch (err) {
+      const msg = errMsg(err);
+      if (!msg.startsWith("Modbus exception")) connected = false;
+      throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address} (32-bit): ${msg}`);
+    }
+  });
 }
 
 async function readRegister64(address: number, slave: number): Promise<number> {
-  await ensureConnected();
-  try {
-    client.setID(slave);
-    const pa = toProtoAddr(address);
-    const res = regType(address) === "holding"
-      ? await client.readHoldingRegisters(pa, 4)
-      : await client.readInputRegisters(pa, 4);
-    const hi = (res.data[0] << 16) | res.data[1];
-    const lo = (res.data[2] << 16) | res.data[3];
-    return Number((BigInt(hi >>> 0) << 32n) | BigInt(lo >>> 0));
-  } catch (err) {
-    const msg = errMsg(err);
-    if (!msg.startsWith("Modbus exception")) connected = false;
-    throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address} (64-bit): ${msg}`);
-  }
+  return serialized(async () => {
+    await ensureConnected();
+    try {
+      client.setID(slave);
+      const pa = toProtoAddr(address);
+      const res = regType(address) === "holding"
+        ? await client.readHoldingRegisters(pa, 4)
+        : await client.readInputRegisters(pa, 4);
+      const hi = (res.data[0] << 16) | res.data[1];
+      const lo = (res.data[2] << 16) | res.data[3];
+      return Number((BigInt(hi >>> 0) << 32n) | BigInt(lo >>> 0));
+    } catch (err) {
+      const msg = errMsg(err);
+      if (!msg.startsWith("Modbus exception")) connected = false;
+      throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address} (64-bit): ${msg}`);
+    }
+  });
 }
 
 async function writeRegister(address: number, value: number, slave: number): Promise<void> {
-  await ensureConnected();
-  try {
-    client.setID(slave);
-    await client.writeRegister(toProtoAddr(address), value);
-  } catch (err) {
-    const msg = errMsg(err);
-    if (!msg.startsWith("Modbus exception")) connected = false;
-    throw new McpError(ErrorCode.InternalError, `Modbus write error at ${address}: ${msg}`);
-  }
+  return serialized(async () => {
+    await ensureConnected();
+    try {
+      client.setID(slave);
+      await client.writeRegister(toProtoAddr(address), value);
+    } catch (err) {
+      const msg = errMsg(err);
+      if (!msg.startsWith("Modbus exception")) connected = false;
+      throw new McpError(ErrorCode.InternalError, `Modbus write error at ${address}: ${msg}`);
+    }
+  });
 }
 
 const server = new Server(
@@ -304,22 +324,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (address == null) {
           throw new McpError(ErrorCode.InvalidParams, "address is required");
         }
-        await ensureConnected();
-        client.setID(slave);
-        const pa = toProtoAddr(address);
-        let data: number[];
-        try {
+        const data = await serialized(async () => {
+          await ensureConnected();
+          client.setID(slave);
+          const pa = toProtoAddr(address);
           try {
-            if (regType(address) === "holding") throw new Error("skip");
-            data = (await client.readInputRegisters(pa, count)).data;
-          } catch {
-            data = (await client.readHoldingRegisters(pa, count)).data;
+            try {
+              if (regType(address) === "holding") throw new Error("skip");
+              return (await client.readInputRegisters(pa, count)).data;
+            } catch {
+              return (await client.readHoldingRegisters(pa, count)).data;
+            }
+          } catch (err) {
+            const msg = errMsg(err);
+            if (!msg.startsWith("Modbus exception")) connected = false;
+            throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address}: ${msg}`);
           }
-        } catch (err) {
-          const msg = errMsg(err);
-          if (!msg.startsWith("Modbus exception")) connected = false;
-          throw new McpError(ErrorCode.InternalError, `Modbus read error at ${address}: ${msg}`);
-        }
+        });
         return { content: [{ type: "text", text: `Register ${address} (${count}): [${data.join(", ")}]` }] };
       }
 
