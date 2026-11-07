@@ -36,8 +36,9 @@ Call `read_inverter_detail` — this returns:
 - Grid frequency (Hz) — should be ~50 Hz
 - Phase voltage (V) and current (A)
 - Power factor (should be near 1.0 or -1.0)
-- Internal temperature (°C)
+- Internal temperature (°C) — inverter
 - Battery SOC/SOH from inverter perspective
+- Battery temperature (°C) — average cell temperature
 - Total PV power (kW) — compare with read_plant
 
 ### 3. Read Accumulated Energy
@@ -74,8 +75,9 @@ Combine the data into an ASCII dashboard followed by a text summary.
     +-- Bat {up/down} {ess_power} kW  (SOC {soc}%, SOH {soh}%)
     +-- Grid   {grid_power} kW  ({buying/exporting})
 ----------------------------------------------------
-  Battery:  {soc}% SOC  |  {soh}% SOH  |  {temp}C
+  Battery:  {soc}% SOC  |  {soh}% SOH  |  {battery_temp}C
   Grid:     {freq} Hz  |  {voltage} V   |  PF {pf}
+  Inverter: {inverter_temp}C
 ----------------------------------------------------
   Lifetime:
     PV Generated    {pv_total} kWh
@@ -113,6 +115,7 @@ house is essentially running off solar with the excess trickling into the batter
 | Grid frequency | 49.5–50.5 Hz | Outside range (grid issue) |
 | Battery SOC | 10–100% | < 10% (critical low) |
 | Battery SOH | 80–100% | < 80% (degraded) |
-| Internal temp | < 65°C | > 65°C (overheating risk) |
+| Internal temp (inverter) | < 65°C | > 65°C (overheating risk) |
+| Battery temp | 0–50°C | < 0°C or > 50°C (outside typical operating range) |
 | Power factor | -1.0 to 1.0 | Near 0 (poor power quality) |
 | Alarms | None | Any active alarm needs investigation |

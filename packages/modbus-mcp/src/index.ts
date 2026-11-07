@@ -493,7 +493,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "read_inverter_detail": {
         const r = REGISTERS;
-        const [runState, activeP, reactiveP, essPwr, freq, temp, outType, phaseV, phaseI, pf, battSoc, battSoh, pvPwr] = await Promise.all([
+        const [runState, activeP, reactiveP, essPwr, freq, temp, outType, phaseV, phaseI, pf, battSoc, battSoh, pvPwr, battTemp] = await Promise.all([
           readRegister(r.INVERTER_RUNNING_STATE.address, r.INVERTER_RUNNING_STATE.slave),
           readRegister32(r.INVERTER_ACTIVE_POWER.address, r.INVERTER_ACTIVE_POWER.slave),
           readRegister32(r.INVERTER_REACTIVE_POWER.address, r.INVERTER_REACTIVE_POWER.slave),
@@ -507,6 +507,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           readRegister(r.INVERTER_BATTERY_SOC.address, r.INVERTER_BATTERY_SOC.slave),
           readRegister(r.INVERTER_BATTERY_SOH.address, r.INVERTER_BATTERY_SOH.slave),
           readRegister32(r.INVERTER_PV_POWER.address, r.INVERTER_PV_POWER.slave),
+          readRegister(r.INVERTER_ESS_AVG_CELL_TEMP.address, r.INVERTER_ESS_AVG_CELL_TEMP.slave, true),
         ]);
         return {
           content: [{
@@ -522,6 +523,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               `  Internal Temp: ${(temp / 10).toFixed(1)}°C`,
               `  Output Type: ${lookupLabel(OUTPUT_TYPES, outType)}`,
               `  Battery SOC: ${(battSoc / 10).toFixed(1)}% / SOH: ${(battSoh / 10).toFixed(1)}%`,
+              `  Battery Temp: ${(battTemp / 10).toFixed(1)}°C`,
               `  PV Power: ${(pvPwr / 1000).toFixed(3)} kW`,
             ].join("\n"),
           }],
